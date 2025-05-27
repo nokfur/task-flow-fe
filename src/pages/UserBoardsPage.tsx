@@ -2,7 +2,7 @@ import type { BoardItem } from '@/interfaces/interfaces';
 import { getFirstLetterOfFirst2Word } from '@/utilities/utils';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import ButtonBase from '@mui/material/ButtonBase';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Avatar from '@mui/material/Avatar';
@@ -13,6 +13,11 @@ import {
     IconTag,
 } from '@tabler/icons-react';
 import Button from '@mui/material/Button';
+import useApiEndpoints from '@/hooks/useApiEndpoints';
+import Skeleton from '@mui/material/Skeleton';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { Link } from 'react-router-dom';
 
 dayjs.extend(relativeTime);
 
@@ -28,15 +33,15 @@ const BoardCard: React.FC<{ board: BoardItem }> = ({ board }) => {
     ];
 
     return (
-        <div className="relative cursor-pointer overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="relative flex cursor-pointer flex-col justify-center overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg">
             <div
                 className={`before:absolute before:top-0 before:right-0 before:h-1 before:w-full ${colors[Math.floor(Math.random() * colors.length)]} before:content-[""]`}>
                 <h6 className="text-lg font-semibold">{board.title}</h6>
-                <p className="my-3 text-sm text-gray-600">
+                <p className="mt-3 text-sm text-gray-600">
                     {board.description}
                 </p>
 
-                <div className="flex items-center gap-4">
+                <div className="my-4 flex items-center gap-4">
                     <div className="flex items-center gap-1">
                         <IconTableColumn className="size-4 text-orange-500" />
                         <span className="text-sm text-gray-600">
@@ -59,7 +64,7 @@ const BoardCard: React.FC<{ board: BoardItem }> = ({ board }) => {
                     </div>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <AvatarGroup
                         max={4}
                         slotProps={{
@@ -68,12 +73,12 @@ const BoardCard: React.FC<{ board: BoardItem }> = ({ board }) => {
                                     'size-6 text-xs bg-gradient-to-br from-blue-500 to-purple-800 text-white',
                             },
                         }}>
-                        {board.members.map((name, index) => (
+                        {board.members.map((member, index) => (
                             <Avatar
                                 key={index}
                                 className="size-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-800 text-xs text-white"
-                                alt={name}>
-                                {getFirstLetterOfFirst2Word(name)}
+                                alt={member.name}>
+                                {getFirstLetterOfFirst2Word(member.name)}
                             </Avatar>
                         ))}
                     </AvatarGroup>
@@ -87,28 +92,116 @@ const BoardCard: React.FC<{ board: BoardItem }> = ({ board }) => {
     );
 };
 
-const mockBoards: BoardItem[] = [
-    {
-        id: 'aa',
-        title: 'Website Redesign Project',
-        description:
-            'Complete redesign of the company website with modern UI/UX principles and responsive design.',
-        columnCount: 4,
-        taskCount: 14,
-        labelCount: 8,
-        createdAt: '1747909051438',
-        updatedAt: '1747909051438',
-        members: ['Ngue A', 'Hu He', 'H C', 'M L', 'H E'],
-    },
-];
+const BoardCardSkeleton: React.FC = () => {
+    return (
+        <div className="relative flex cursor-pointer flex-col justify-center overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+            <div className="bg-gray200 before:absolute before:top-0 before:right-0 before:h-1 before:w-full before:content-['']">
+                <h6 className="text-lg font-semibold">
+                    <Skeleton />
+                </h6>
+                <p className="mt-3 text-sm text-gray-600">
+                    <Skeleton />
+                </p>
+
+                <div className="my-4 flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                        <Skeleton variant="circular" className="size-4" />
+                        <span className="text-sm text-gray-600">
+                            <Skeleton width={30} />
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        <Skeleton variant="circular" className="size-4" />
+                        <span className="text-sm text-gray-600">
+                            <Skeleton width={30} />
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        <Skeleton variant="circular" className="size-4" />
+                        <span className="text-sm text-gray-600">
+                            <Skeleton width={30} />
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <AvatarGroup
+                        max={4}
+                        slotProps={{
+                            surplus: {
+                                className:
+                                    'size-6 text-xs bg-gradient-to-br from-blue-500 to-purple-800 text-white',
+                            },
+                        }}>
+                        {Array.from({ length: 3 }).map((_, index) => (
+                            <Skeleton
+                                key={index}
+                                variant="circular"
+                                className="size-6"
+                            />
+                        ))}
+                    </AvatarGroup>
+
+                    <span className="text-xs text-gray-600">
+                        <Skeleton width={70} />
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const UserBoardsPage = () => {
+    const apiEndPoints = useApiEndpoints();
+
     const [boards, setBoards] = useState<BoardItem[]>([]);
+
+    const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
 
+    const [sortName, setSortName] = useState<'update' | 'name'>('update');
+    const [sortType, setSortType] = useState<'asc' | 'desc'>('asc');
+
     useEffect(() => {
-        setBoards(mockBoards);
+        setLoading(true);
+        apiEndPoints.boards
+            .getOwn()
+            .then(({ data }: { data: BoardItem[] }) => {
+                setBoards(data);
+            })
+            .finally(() => setLoading(false));
     }, []);
+
+    const { filteredBoards } = useMemo(() => {
+        let filteredBoards = boards;
+
+        filteredBoards = filteredBoards.filter((board) => {
+            // All filter
+            if (activeTab === 0) return true;
+
+            // Own board filter
+            if (activeTab === 1) return board.isOwn;
+
+            // member of board filter
+            return !board.isOwn;
+        });
+
+        // sort
+        filteredBoards = filteredBoards.sort((a, b) => {
+            const multiplier = sortType === 'asc' ? 1 : -1;
+            if (sortName === 'update')
+                return (
+                    (new Date(b.updatedAt).getTime() -
+                        new Date(a.updatedAt).getTime()) *
+                    multiplier
+                );
+            return a.title.localeCompare(b.title) * multiplier;
+        });
+
+        return { filteredBoards };
+    }, [activeTab, boards, sortName, sortType]);
 
     return (
         <div className="min-h-screen bg-slate-50 px-6 py-8 md:px-12 lg:px-24">
@@ -117,37 +210,83 @@ const UserBoardsPage = () => {
                 Organize your projects and collaborate with your team
             </p>
 
-            <div className="mt-8 inline-block space-x-1 rounded-md bg-slate-200/50 p-1">
-                <Button
-                    className={`text-sm normal-case ${activeTab === 0 ? 'bg-white text-blue-500 shadow-md' : 'text-gray-600'}`}
-                    onClick={() => setActiveTab(0)}>
-                    All
-                </Button>
-                <Button
-                    className={`text-sm normal-case ${activeTab === 1 ? 'bg-white text-blue-500 shadow-md' : 'text-gray-600'}`}
-                    onClick={() => setActiveTab(1)}>
-                    My Boards
-                </Button>
-                <Button
-                    className={`text-sm normal-case ${activeTab === 2 ? 'bg-white text-blue-500 shadow-md' : 'text-gray-600'}`}
-                    onClick={() => setActiveTab(2)}>
-                    Collaborate Boards
-                </Button>
+            <div className="mt-8 flex items-center justify-between">
+                <div className="inline-block space-x-1 rounded-md bg-slate-200/50 p-1">
+                    <Button
+                        className={`text-sm normal-case ${activeTab === 0 ? 'bg-white font-semibold text-blue-500 shadow-md' : 'text-gray-600'}`}
+                        onClick={() => setActiveTab(0)}>
+                        All
+                    </Button>
+                    <Button
+                        className={`text-sm normal-case ${activeTab === 1 ? 'bg-white font-semibold text-blue-500 shadow-md' : 'text-gray-600'}`}
+                        onClick={() => setActiveTab(1)}>
+                        My Boards
+                    </Button>
+                    <Button
+                        className={`text-sm normal-case ${activeTab === 2 ? 'bg-white font-semibold text-blue-500 shadow-md' : 'text-gray-600'}`}
+                        onClick={() => setActiveTab(2)}>
+                        Team Boards
+                    </Button>
+                </div>
+
+                <div className="space-x-4">
+                    <Select
+                        value={sortName}
+                        onChange={(event) => setSortName(event.target.value)}
+                        className="w-36 rounded-sm bg-white px-3 py-1 text-sm shadow-md"
+                        variant="standard"
+                        disableUnderline>
+                        <MenuItem value="update" className="text-sm">
+                            Last updated
+                        </MenuItem>
+                        <MenuItem value="name" className="text-sm">
+                            Name
+                        </MenuItem>
+                    </Select>
+
+                    <Select
+                        value={sortType}
+                        onChange={(event) => setSortType(event.target.value)}
+                        className="w-36 rounded-sm bg-white px-3 py-1 text-sm shadow-md"
+                        variant="standard"
+                        disableUnderline>
+                        <MenuItem value="asc" className="text-sm">
+                            Ascending
+                        </MenuItem>
+                        <MenuItem value="desc" className="text-sm">
+                            Descending
+                        </MenuItem>
+                    </Select>
+                </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <ButtonBase className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 px-3 py-9 duration-300 hover:border-blue-300 hover:bg-blue-50">
-                    <div className="rounded-full bg-slate-200 px-3 py-3 text-slate-500 duration-300 group-hover:bg-blue-500 group-hover:text-slate-200">
-                        <IconTablePlus className="duration-300" />
-                    </div>
-                    <p className="text-lg font-medium">Create new board</p>
-                    <p>Start a new project or organize your tasks</p>
-                </ButtonBase>
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {activeTab !== 2 && (
+                    <ButtonBase
+                        className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 px-3 py-9 duration-300 hover:border-blue-300 hover:bg-blue-50"
+                        component={Link}
+                        to="create">
+                        <div className="rounded-full bg-slate-200 px-3 py-3 text-slate-500 duration-300 group-hover:bg-blue-500 group-hover:text-slate-200">
+                            <IconTablePlus className="duration-300" />
+                        </div>
+                        <p className="text-lg font-medium">Create new board</p>
+                        <p>Start a new project and organize your tasks</p>
+                    </ButtonBase>
+                )}
 
-                {boards.length > 0 &&
-                    boards.map((board) => (
-                        <BoardCard board={board} key={board.id} />
-                    ))}
+                {loading
+                    ? Array.from({ length: 6 }).map((_, index) => (
+                          <BoardCardSkeleton key={index} />
+                      ))
+                    : filteredBoards.length > 0
+                      ? filteredBoards.map((board) => (
+                            <BoardCard board={board} key={board.id} />
+                        ))
+                      : activeTab === 2 && (
+                            <div className="text-center font-medium">
+                                You don't have any boards
+                            </div>
+                        )}
             </div>
         </div>
     );

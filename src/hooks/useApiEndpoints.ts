@@ -14,6 +14,9 @@ const useApiEndpoints = () => {
             register: (payload: RegisterRequest) =>
                 axiosClient.post('/auth/register', payload),
         },
+        boards: {
+            getOwn: () => axiosClient.get('/boards'),
+        },
     };
 };
 

@@ -14,7 +14,8 @@ export interface BoardItem {
     columnCount: number;
     taskCount: number;
     labelCount: number;
-    members: string[];
+    members: User[];
     createdAt: string;
     updatedAt: string;
+    isOwn: boolean;
 }

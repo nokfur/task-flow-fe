@@ -46,7 +46,9 @@ const Header = () => {
             <div className="flex items-center justify-center gap-4">
                 <Button
                     className="bg-blue-600 px-4 font-medium text-gray-50 normal-case transition duration-200 hover:bg-blue-700 hover:shadow-md"
-                    startIcon={<IconTablePlus />}>
+                    startIcon={<IconTablePlus />}
+                    component={Link}
+                    to="/boards/create">
                     Create Board
                 </Button>
                 <div>

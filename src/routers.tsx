@@ -2,6 +2,7 @@ import ProtectedRoute from '@/components/common/ProtectedRoute';
 import Header from '@/components/Header';
 import { UserRole } from '@/constants/constants';
 import AuthPage from '@/pages/AuthPage';
+import UserBoardsCreatePage from '@/pages/UserBoardsCreatePage';
 import UserBoardsPage from '@/pages/UserBoardsPage';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 
@@ -28,7 +29,20 @@ const router = createBrowserRouter([
                 path: '',
                 element: <Navigate to="boards" replace />,
             },
-            { path: 'boards', element: <UserBoardsPage /> },
+            {
+                path: 'boards',
+                element: <Outlet />,
+                children: [
+                    {
+                        path: '',
+                        element: <UserBoardsPage />,
+                    },
+                    {
+                        path: 'create',
+                        element: <UserBoardsCreatePage />,
+                    },
+                ],
+            },
         ],
     },
 ]);
