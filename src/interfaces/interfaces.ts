@@ -19,3 +19,10 @@ export interface BoardItem {
     updatedAt: string;
     isOwn: boolean;
 }
+
+export interface BoardMember {
+    id: string;
+    name: string;
+    email: string;
+    role?: 'Owner' | 'Member' | 'Admin';
+}

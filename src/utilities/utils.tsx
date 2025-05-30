@@ -6,7 +6,7 @@ export function getFirstLetterOfFirst2Word(
     if (!name || name.length === 0) return '';
     const names = name.split(' ');
     const n = names.length;
-    return n > 1 ? names[n - 1][0] + names[n - 2][0] : names[n - 1][0];
+    return n > 1 ? names[n - 2][0] + names[n - 1][0] : names[n - 1][0];
 }
 
 export function numberFormatter(num: number, digits: number = 1): string {

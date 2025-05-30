@@ -1,5 +1,6 @@
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import { AnimatePresence, motion } from 'framer-motion';
 import React, { lazy, Suspense, useState, type ReactNode } from 'react';
 
 const Login = lazy(() => import('@/components/auth/Login'));
@@ -25,11 +26,20 @@ const tabs: { name: string; render: () => ReactNode }[] = [
 
 const LetterHoverEffect: React.FC<{ text: string }> = ({ text }) => {
     return text.split('').map((letter, index) => (
-        <div
+        <motion.span
             key={index}
-            className={`inline-block cursor-grab from-orange-400 to-blue-400 text-gray-50 transition-all duration-300 ease-out hover:scale-115 hover:bg-gradient-to-br hover:bg-clip-text hover:text-transparent ${index & 1 ? 'hover:-rotate-15' : 'hover:rotate-15'}`}>
+            className="h inline-block cursor-pointer text-gray-50"
+            whileHover={{
+                scale: 1.15,
+                rotate: index % 2 === 0 ? 15 : -15,
+            }}
+            transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 15,
+            }}>
             {letter}
-        </div>
+        </motion.span>
     ));
 };
 
@@ -72,32 +82,60 @@ const AuthPage = () => {
                 <h2 className="mb-3 text-4xl font-extrabold text-gray-950">
                     Welcome to TaskFlow
                 </h2>
-                <div className="mb-8 rounded-lg bg-gray-100 p-1">
-                    {tabs.map((tab, index) => (
-                        <Button
-                            key={index}
-                            className={`w-28 rounded-lg py-2 text-base font-semibold normal-case ${activeTab === index ? 'bg-gray-50 text-gray-950 shadow-md' : 'text-gray-500'}`}
-                            onClick={() => setActiveTab(index)}>
-                            {tab.name}
-                        </Button>
-                    ))}
+                <div className="relative mb-8 inline-flex rounded-lg bg-gray-100 p-1">
+                    {tabs.map((tab, index) => {
+                        const isActive = activeTab === index;
+                        return (
+                            <Button
+                                key={index}
+                                onClick={() => setActiveTab(index)}
+                                className={`relative z-10 w-28 rounded-lg py-2 text-base font-semibold normal-case transition-colors duration-300 ${
+                                    isActive
+                                        ? 'text-gray-950'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                }`}>
+                                {tab.name}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="tab-indicator"
+                                        className="absolute inset-0 -z-10 rounded-lg bg-white shadow-md"
+                                        transition={{
+                                            type: 'spring',
+                                            bounce: 0.3,
+                                            duration: 0.5,
+                                        }}
+                                    />
+                                )}
+                            </Button>
+                        );
+                    })}
                 </div>
 
-                <div className="">
-                    {tabs.map((tab, index) => (
-                        <div
-                            key={index}
-                            className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                                activeTab === index
-                                    ? 'max-h-screen translate-x-0 opacity-100 delay-700'
-                                    : 'max-h-0 translate-x-8 opacity-0'
-                            }`}>
-                            <Suspense fallback={<CircularProgress />}>
-                                {tab.render()}
+                <AnimatePresence mode="wait">
+                    {tabs.map((tab, index) =>
+                        activeTab === index ? (
+                            <Suspense
+                                key={index}
+                                fallback={
+                                    <div className="p-8">
+                                        <CircularProgress />
+                                    </div>
+                                }>
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{
+                                        duration: 0.3,
+                                        ease: 'easeInOut',
+                                    }}
+                                    className="overflow-hidden">
+                                    {tab.render()}
+                                </motion.div>
                             </Suspense>
-                        </div>
-                    ))}
-                </div>
+                        ) : null,
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

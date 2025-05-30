@@ -69,9 +69,11 @@ const InputField: React.FC<{
                     disabled={disabled}
                 />
                 {startIcon && (
-                    <span className="absolute inset-y-0 left-3 flex items-center">
-                        {startIcon}
-                    </span>
+                    <div className="absolute inset-y-0 left-3 flex items-center text-gray-700">
+                        <span className="flex size-6 max-w-6 items-center justify-center">
+                            {startIcon}
+                        </span>
+                    </div>
                 )}
                 {allowTogglePassword && type === 'password' && (
                     <span

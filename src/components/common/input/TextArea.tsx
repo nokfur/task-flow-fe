@@ -35,7 +35,7 @@ const TextArea: React.FC<{
                     onChange={onChange}
                     onBlur={onBlur}
                     className={`mt-1 w-full rounded-lg border-2 bg-white p-3 text-sm transition-all duration-300 ease-linear outline-none focus:border-purple-400 focus:shadow-md ${
-                        error ? 'border-red-500' : 'border-gray-300'
+                        error ? 'border-red-400' : 'border-gray-100'
                     }`}
                 />
                 {error && <p className="text-sm text-red-500">{error}</p>}

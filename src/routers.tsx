@@ -1,3 +1,4 @@
+import PageWrapper from '@/components/common/PageWrapper';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import Header from '@/components/Header';
 import { UserRole } from '@/constants/constants';
@@ -8,38 +9,44 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 
 const router = createBrowserRouter([
     {
-        path: 'auth',
-        element: (
-            <ProtectedRoute roles={[UserRole.Guest]}>
-                <Outlet />
-            </ProtectedRoute>
-        ),
-        children: [{ path: '', element: <AuthPage /> }],
-    },
-    {
         path: '',
-        element: (
-            <ProtectedRoute roles={[UserRole.Customer]}>
-                <Header />
-                <Outlet />
-            </ProtectedRoute>
-        ),
+        element: <PageWrapper />,
         children: [
             {
-                path: '',
-                element: <Navigate to="boards" replace />,
+                path: 'auth',
+                element: (
+                    <ProtectedRoute roles={[UserRole.Guest]}>
+                        <Outlet />
+                    </ProtectedRoute>
+                ),
+                children: [{ path: '', element: <AuthPage /> }],
             },
             {
-                path: 'boards',
-                element: <Outlet />,
+                path: '',
+                element: (
+                    <ProtectedRoute roles={[UserRole.Customer]}>
+                        <Header />
+                        <Outlet />
+                    </ProtectedRoute>
+                ),
                 children: [
                     {
                         path: '',
-                        element: <UserBoardsPage />,
+                        element: <Navigate to="boards" replace />,
                     },
                     {
-                        path: 'create',
-                        element: <UserBoardsCreatePage />,
+                        path: 'boards',
+                        element: <Outlet />,
+                        children: [
+                            {
+                                path: '',
+                                element: <UserBoardsPage />,
+                            },
+                            {
+                                path: 'create',
+                                element: <UserBoardsCreatePage />,
+                            },
+                        ],
                     },
                 ],
             },

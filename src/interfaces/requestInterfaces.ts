@@ -8,3 +8,8 @@ export interface RegisterRequest {
     email: string;
     password: string;
 }
+
+export interface BoardAddRequest {
+    title: string;
+    description: string;
+}

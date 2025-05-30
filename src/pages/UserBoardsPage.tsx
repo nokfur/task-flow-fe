@@ -18,6 +18,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 
 dayjs.extend(relativeTime);
 
@@ -33,7 +34,7 @@ const BoardCard: React.FC<{ board: BoardItem }> = ({ board }) => {
     ];
 
     return (
-        <div className="relative flex cursor-pointer flex-col justify-center overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="relative flex h-full cursor-pointer flex-col justify-center overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg">
             <div
                 className={`before:absolute before:top-0 before:right-0 before:h-1 before:w-full ${colors[Math.floor(Math.random() * colors.length)]} before:content-[""]`}>
                 <h6 className="text-lg font-semibold">{board.title}</h6>
@@ -94,7 +95,7 @@ const BoardCard: React.FC<{ board: BoardItem }> = ({ board }) => {
 
 const BoardCardSkeleton: React.FC = () => {
     return (
-        <div className="relative flex cursor-pointer flex-col justify-center overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="relative flex h-full cursor-pointer flex-col justify-center overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg">
             <div className="bg-gray200 before:absolute before:top-0 before:right-0 before:h-1 before:w-full before:content-['']">
                 <h6 className="text-lg font-semibold">
                     <Skeleton />
@@ -212,21 +213,25 @@ const UserBoardsPage = () => {
 
             <div className="mt-8 flex items-center justify-between">
                 <div className="inline-block space-x-1 rounded-md bg-slate-200/50 p-1">
-                    <Button
-                        className={`text-sm normal-case ${activeTab === 0 ? 'bg-white font-semibold text-blue-500 shadow-md' : 'text-gray-600'}`}
-                        onClick={() => setActiveTab(0)}>
-                        All
-                    </Button>
-                    <Button
-                        className={`text-sm normal-case ${activeTab === 1 ? 'bg-white font-semibold text-blue-500 shadow-md' : 'text-gray-600'}`}
-                        onClick={() => setActiveTab(1)}>
-                        My Boards
-                    </Button>
-                    <Button
-                        className={`text-sm normal-case ${activeTab === 2 ? 'bg-white font-semibold text-blue-500 shadow-md' : 'text-gray-600'}`}
-                        onClick={() => setActiveTab(2)}>
-                        Team Boards
-                    </Button>
+                    {['All', 'My Boards', 'Team Boards'].map((tab, index) => (
+                        <Button
+                            key={index}
+                            className={`z-0 bg-transparent text-sm font-semibold normal-case ${activeTab === index ? 'text-blue-500' : 'text-gray-600'}`}
+                            onClick={() => setActiveTab(index)}>
+                            {tab}
+                            {activeTab === index && (
+                                <motion.div
+                                    layoutId="tab-indicator"
+                                    className="absolute inset-0 -z-10 rounded-md bg-white shadow-md"
+                                    transition={{
+                                        type: 'spring',
+                                        bounce: 0.3,
+                                        duration: 0.5,
+                                    }}
+                                />
+                            )}
+                        </Button>
+                    ))}
                 </div>
 
                 <div className="space-x-4">
@@ -274,19 +279,46 @@ const UserBoardsPage = () => {
                     </ButtonBase>
                 )}
 
-                {loading
-                    ? Array.from({ length: 6 }).map((_, index) => (
-                          <BoardCardSkeleton key={index} />
-                      ))
-                    : filteredBoards.length > 0
-                      ? filteredBoards.map((board) => (
-                            <BoardCard board={board} key={board.id} />
-                        ))
-                      : activeTab === 2 && (
-                            <div className="text-center font-medium">
-                                You don't have any boards
-                            </div>
-                        )}
+                <AnimatePresence mode="popLayout">
+                    {loading
+                        ? Array.from({ length: 6 }).map((_, index) => (
+                              <motion.div
+                                  key={index}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{
+                                      delay: index * 0.1,
+                                      duration: 0.4,
+                                  }}>
+                                  <BoardCardSkeleton />
+                              </motion.div>
+                          ))
+                        : filteredBoards.length > 0
+                          ? filteredBoards.map((board, index) => (
+                                <motion.div
+                                    key={`${board.id}-${index}`}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{
+                                        delay: index * 0.1,
+                                        duration: 0.4,
+                                    }}>
+                                    <BoardCard board={board} />
+                                </motion.div>
+                            ))
+                          : activeTab === 2 && (
+                                <motion.div
+                                    className="text-center font-medium"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.5 }}>
+                                    You don't have any boards
+                                </motion.div>
+                            )}
+                </AnimatePresence>
             </div>
         </div>
     );
