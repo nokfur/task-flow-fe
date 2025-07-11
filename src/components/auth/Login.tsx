@@ -9,9 +9,7 @@ import useApiEndpoints from '@/hooks/useApiEndpoints';
 import SpinningCircle from '@/components/common/loader/SpinningCircle';
 
 const validationSchema = Yup.object({
-    email: Yup.string()
-        .email('Please input a valid email')
-        .required('Please input'),
+    email: Yup.string().required('Please input'),
     password: Yup.string().required('Please input'),
 });
 

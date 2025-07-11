@@ -1,23 +1,35 @@
 import { IconEye, IconEyeClosed } from '@tabler/icons-react';
 import { useState } from 'react';
 
-const InputField: React.FC<{
+export interface InputProps {
     name?: string;
     label?: string;
-    type?: 'text' | 'number' | 'password' | 'email' | 'tel';
+    type?: 'text' | 'number' | 'password' | 'email' | 'tel' | 'color';
     placeholder?: string;
     isRequired?: boolean;
     value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-    onKeyPress?: (e: React.KeyboardEvent) => void;
+    onChange?: (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => void;
+    onBlur?: (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => void;
+    onFocus?: (
+        e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => void;
+    onKeyPress?: (
+        e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => void;
     error?: string;
     disabled?: boolean; // For disabled input field
     allowTogglePassword?: boolean;
     startIcon?: React.ReactNode;
     className?: string;
-}> = ({
+    autoFocus?: boolean;
+    isArea?: boolean; // For textarea input
+}
+
+const InputField: React.FC<InputProps> = ({
     name,
     label,
     type = 'text',
@@ -33,11 +45,32 @@ const InputField: React.FC<{
     allowTogglePassword = true,
     startIcon,
     className,
+    autoFocus = false,
+    isArea = false, // For textarea input
 }) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
+    };
+
+    const inputProps = {
+        name,
+        type:
+            type === 'password'
+                ? isPasswordVisible
+                    ? 'text'
+                    : 'password'
+                : type,
+        placeholder,
+        value,
+        onChange,
+        onBlur,
+        onKeyUp: onKeyPress,
+        onFocus,
+        className: `w-full rounded-lg border-2 px-3 py-2 text-sm text-gray-950 transition-all duration-300 ease-linear outline-none focus:border-purple-400 focus:shadow-md ${error ? 'border-red-400' : 'border-gray-100'} ${disabled ? 'bg-gray-200' : 'bg-white'} ${startIcon && 'pl-10'} ${className}`,
+        disabled,
+        autoFocus,
     };
 
     return (
@@ -50,24 +83,11 @@ const InputField: React.FC<{
             )}
 
             <div className="relative flex items-center justify-center">
-                <input
-                    name={name}
-                    type={
-                        type === 'password'
-                            ? isPasswordVisible
-                                ? 'text'
-                                : 'password'
-                            : type
-                    }
-                    placeholder={placeholder}
-                    value={value}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    onKeyUp={onKeyPress}
-                    onFocus={onFocus}
-                    className={`w-full rounded-lg border-2 px-3 py-2 text-sm text-gray-950 transition-all duration-300 ease-linear outline-none focus:border-purple-400 focus:shadow-md ${error ? 'border-red-400' : 'border-gray-100'} ${disabled ? 'bg-gray-200' : 'bg-white'} ${startIcon && 'pl-10'} ${className}`}
-                    disabled={disabled}
-                />
+                {isArea ? (
+                    <textarea {...inputProps} />
+                ) : (
+                    <input {...inputProps} />
+                )}
                 {startIcon && (
                     <div className="absolute inset-y-0 left-3 flex items-center text-gray-700">
                         <span className="flex size-6 max-w-6 items-center justify-center">

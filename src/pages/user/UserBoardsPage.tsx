@@ -1,4 +1,4 @@
-import type { BoardItem } from '@/interfaces/interfaces';
+import type { BoardGeneral } from '@/interfaces/interfaces';
 import { getFirstLetterOfFirst2Word } from '@/utilities/utils';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -22,7 +22,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 dayjs.extend(relativeTime);
 
-const BoardCard: React.FC<{ board: BoardItem }> = ({ board }) => {
+const BoardCard: React.FC<{ board: BoardGeneral }> = ({ board }) => {
     const colors = [
         'before:bg-blue-600',
         'before:bg-green-600',
@@ -157,7 +157,7 @@ const BoardCardSkeleton: React.FC = () => {
 const UserBoardsPage = () => {
     const apiEndPoints = useApiEndpoints();
 
-    const [boards, setBoards] = useState<BoardItem[]>([]);
+    const [boards, setBoards] = useState<BoardGeneral[]>([]);
 
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
@@ -168,8 +168,8 @@ const UserBoardsPage = () => {
     useEffect(() => {
         setLoading(true);
         apiEndPoints.boards
-            .getOwn()
-            .then(({ data }: { data: BoardItem[] }) => {
+            .getOwns()
+            .then(({ data }: { data: BoardGeneral[] }) => {
                 setBoards(data);
             })
             .finally(() => setLoading(false));
@@ -279,14 +279,14 @@ const UserBoardsPage = () => {
                     </ButtonBase>
                 )}
 
-                <AnimatePresence mode="popLayout">
+                <AnimatePresence mode="sync">
                     {loading
                         ? Array.from({ length: 6 }).map((_, index) => (
                               <motion.div
                                   key={index}
                                   initial={{ opacity: 0, y: 10 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0 }}
+                                  exit={{ opacity: 0, y: -10 }}
                                   transition={{
                                       delay: index * 0.1,
                                       duration: 0.4,
@@ -297,10 +297,10 @@ const UserBoardsPage = () => {
                         : filteredBoards.length > 0
                           ? filteredBoards.map((board, index) => (
                                 <motion.div
-                                    key={`${board.id}-${index}`}
+                                    key={index}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
                                     transition={{
                                         delay: index * 0.1,
                                         duration: 0.4,
@@ -311,9 +311,9 @@ const UserBoardsPage = () => {
                           : activeTab === 2 && (
                                 <motion.div
                                     className="text-center font-medium"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
                                     transition={{ duration: 0.5 }}>
                                     You don't have any boards
                                 </motion.div>

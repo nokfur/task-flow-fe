@@ -11,6 +11,7 @@ interface ProtectedRouteProps {
 const roleRedirectPath: Record<UserRole, string> = {
     [UserRole.Guest]: '/auth',
     [UserRole.Customer]: '/',
+    [UserRole.Admin]: '/admin',
 };
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({

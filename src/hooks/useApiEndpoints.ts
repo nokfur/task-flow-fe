@@ -1,8 +1,17 @@
 import useAxios from '@/hooks/axios-client';
+import type { Board } from '@/interfaces/interfaces';
 import type {
     BoardAddRequest,
+    ColumnAddRequest,
+    ColumnPositionUpdateRequest,
+    ColumnUpdateRequest,
+    LabelAddRequest,
+    LabelUpdateRequest,
     LoginRequest,
     RegisterRequest,
+    TaskAddRequest,
+    TaskReorderUpdateRequest,
+    TaskUpdateRequest,
 } from '@/interfaces/requestInterfaces';
 
 const useApiEndpoints = () => {
@@ -16,9 +25,51 @@ const useApiEndpoints = () => {
                 axiosClient.post('/auth/register', payload),
         },
         boards: {
-            getOwn: () => axiosClient.get('/boards'),
-            addBoard: (payload: BoardAddRequest) =>
+            getOwns: () => axiosClient.get('/boards'),
+            getDetail: (boardId: string) =>
+                axiosClient.get(`/boards/${boardId}`),
+            add: (payload: BoardAddRequest) =>
                 axiosClient.post('/boards', payload),
+            update: (boardId: string, payload: Board) =>
+                axiosClient.put(`/boards/${boardId}`, payload),
+            delete: (boardId: string) =>
+                axiosClient.delete(`/boards/${boardId}`),
+            admin: {
+                getTemplates: () => axiosClient.get('/boards/templates'),
+                addTemplate: (payload: Board) =>
+                    axiosClient.post('/boards/templates', payload),
+            },
+        },
+        columns: {
+            add: (boardId: string, payload: ColumnAddRequest) =>
+                axiosClient.post(`/boards/${boardId}/columns`, payload),
+            update: (columnId: string, payload: ColumnUpdateRequest) =>
+                axiosClient.put(`/columns/${columnId}`, payload),
+            delete: (columnId: string) =>
+                axiosClient.delete(`/columns/${columnId}`),
+            updatePositions: (payload: ColumnPositionUpdateRequest[]) =>
+                axiosClient.patch(`/columns/positions`, payload),
+        },
+        tasks: {
+            add: (columnId: string, payload: TaskAddRequest) =>
+                axiosClient.post(`/columns/${columnId}/tasks`, payload),
+            update: (taskId: string, payload: TaskUpdateRequest) =>
+                axiosClient.put(`/tasks/${taskId}`, payload),
+            delete: (taskId: string) => axiosClient.delete(`/tasks/${taskId}`),
+            deleteAll: (columnId: string) =>
+                axiosClient.delete(`/columns/${columnId}/tasks`),
+            toggleLabel: (taskId: string, labelId: string) =>
+                axiosClient.patch(`/tasks/${taskId}/labels/${labelId}`),
+            reorder: (payload: TaskReorderUpdateRequest) =>
+                axiosClient.patch(`/tasks/reorder`, payload),
+        },
+        labels: {
+            add: (boardId: string, payload: LabelAddRequest) =>
+                axiosClient.post(`/boards/${boardId}/labels`, payload),
+            update: (labelId: string, payload: LabelUpdateRequest) =>
+                axiosClient.put(`/labels/${labelId}`, payload),
+            delete: (labelId: string) =>
+                axiosClient.delete(`/labels/${labelId}`),
         },
         users: {
             search: (query: string, exceptIds: string[]) =>

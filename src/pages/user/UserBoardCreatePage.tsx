@@ -1,5 +1,4 @@
 import InputField from '@/components/common/input/InputField';
-import TextArea from '@/components/common/input/TextArea';
 import SpinningCircle from '@/components/common/loader/SpinningCircle';
 import { useAuthProvider } from '@/contexts/AuthContext';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
@@ -26,7 +25,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import IconButton from '@mui/material/IconButton';
 
 const TeamMemberAddModal = lazy(
-    () => import('@/components/TeamMemberAddModal'),
+    () => import('@/components/user/TeamMemberAddModal'),
 );
 
 interface BoardTemplate {
@@ -160,7 +159,7 @@ const sampleColumns: { title: string; tasks: string[] }[] = [
     },
 ];
 
-const UserBoardsCreatePage = () => {
+const UserBoardCreatePage = () => {
     const apiEndpoints = useApiEndpoints();
 
     const { user } = useAuthProvider();
@@ -191,7 +190,7 @@ const UserBoardsCreatePage = () => {
 
             setLoading(true);
             apiEndpoints.boards
-                .addBoard(payload)
+                .add(payload)
                 .then(() => {
                     toast.success('Board add successfully!');
                 })
@@ -279,13 +278,14 @@ const UserBoardsCreatePage = () => {
                             error={getError('title')}
                         />
 
-                        <TextArea
+                        <InputField
                             name="description"
                             label="Description"
                             placeholder="Describe what this board is for and what you hope to accomplish"
                             value={formik.values.description}
                             onChange={formik.handleChange}
                             error={getError('description')}
+                            isArea
                         />
                     </div>
 
@@ -359,7 +359,7 @@ const UserBoardsCreatePage = () => {
 
                     <div className="mt-8 flex items-center justify-end gap-4">
                         <Button
-                            className="border border-gray-200 bg-gray-100/70 px-5 text-gray-500 normal-case hover:bg-gray-200"
+                            className="border border-gray-200 bg-gray-50 px-5 text-gray-500 normal-case hover:bg-gray-100"
                             component={Link}
                             to="/boards">
                             Cancel
@@ -377,4 +377,4 @@ const UserBoardsCreatePage = () => {
     );
 };
 
-export default UserBoardsCreatePage;
+export default UserBoardCreatePage;
