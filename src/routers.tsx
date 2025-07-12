@@ -1,4 +1,4 @@
-import TemplateBoardManagementPage from '@/pages/admin/TemplateBoardManagementPage';
+import TemplateBoardManagementPage from '@/pages/admin/template-boards/TemplateBoardManagementPage';
 import PageWrapper from '@/components/common/PageWrapper';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import { UserRole } from '@/constants/constants';
@@ -7,9 +7,9 @@ import AuthPage from '@/pages/AuthPage';
 import UserBoardCreatePage from '@/pages/user/UserBoardCreatePage';
 import UserBoardsPage from '@/pages/user/UserBoardsPage';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
-import TemplateBoardCreatePage from '@/pages/admin/TemplateBoardCreatePage';
+import TemplateBoardCreatePage from '@/pages/admin/template-boards/TemplateBoardCreatePage';
 import UserLayout from '@/components/layout/UserLayout';
-import TemplateBoardUpdatePage from '@/pages/admin/TemplateBoardUpdatePage';
+import TemplateBoardUpdatePage from '@/pages/admin/template-boards/TemplateBoardUpdatePage';
 import ChangePassword from '@/components/user/ChangePassword';
 
 const router = createBrowserRouter([

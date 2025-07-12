@@ -36,7 +36,7 @@ const TemplateBoardUpdatePage = () => {
                 setBoard(data);
             })
             .finally(() => setLoading(false));
-    }, []);
+    }, [boardId]);
 
     const handleUpdateBoard = (val: string, type: 'title' | 'description') => {
         const updated: Board = { ...board, [type]: val };

@@ -35,11 +35,7 @@ const useApiEndpoints = () => {
                 axiosClient.put(`/boards/${boardId}`, payload),
             delete: (boardId: string) =>
                 axiosClient.delete(`/boards/${boardId}`),
-            admin: {
-                getTemplates: () => axiosClient.get('/boards/templates'),
-                addTemplate: (payload: Board) =>
-                    axiosClient.post('/boards/templates', payload),
-            },
+            getTemplates: () => axiosClient.get('/boards/templates'),
         },
         columns: {
             add: (boardId: string, payload: ColumnAddRequest) =>
@@ -77,6 +73,15 @@ const useApiEndpoints = () => {
                 axiosClient.post(`/users?search=${query}`, exceptIds),
             changePassword: (payload: ChangePasswordrRequest) =>
                 axiosClient.patch(`/users/password`, payload),
+        },
+        admin: {
+            boards: {
+                addTemplate: (payload: Board) =>
+                    axiosClient.post('/admin/boards/templates', payload),
+            },
+            users: {
+                getAll: () => axiosClient.get('/admin/users'),
+            },
         },
     };
 };

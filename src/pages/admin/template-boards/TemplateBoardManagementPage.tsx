@@ -173,7 +173,7 @@ const TemplateBoardManagementPage = () => {
 
     useEffect(() => {
         setLoading(true);
-        apiEndPoints.boards.admin
+        apiEndPoints.boards
             .getTemplates()
             .then(({ data }: { data: BoardGeneral[] }) => {
                 setBoards(data);

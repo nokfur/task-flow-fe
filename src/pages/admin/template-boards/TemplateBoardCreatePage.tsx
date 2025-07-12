@@ -75,7 +75,7 @@ const TemplateBoardCreatePage = () => {
                 })),
             };
 
-            apiEndpoints.boards.admin
+            apiEndpoints.admin.boards
                 .addTemplate(payload)
                 .then(() => {
                     toast.success('Add template successfully!');
