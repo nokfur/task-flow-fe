@@ -11,6 +11,11 @@ export interface RegisterRequest {
     password: string;
 }
 
+export interface ChangePasswordrRequest {
+    oldPassword: string;
+    newPassword: string;
+}
+
 export interface BoardAddRequest {
     title: string;
     description: string;

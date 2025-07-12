@@ -1,4 +1,4 @@
-import Header from '@/components/Header';
+import Header from '@/components/user/Header';
 import React, { type ReactNode } from 'react';
 
 const UserLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {

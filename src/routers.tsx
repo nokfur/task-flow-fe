@@ -10,6 +10,7 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import TemplateBoardCreatePage from '@/pages/admin/TemplateBoardCreatePage';
 import UserLayout from '@/components/layout/UserLayout';
 import TemplateBoardUpdatePage from '@/pages/admin/TemplateBoardUpdatePage';
+import ChangePassword from '@/components/user/ChangePassword';
 
 const router = createBrowserRouter([
     {
@@ -87,6 +88,7 @@ const router = createBrowserRouter([
                             },
                         ],
                     },
+                    { path: 'change-password', element: <ChangePassword /> },
                 ],
             },
             {

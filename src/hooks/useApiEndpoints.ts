@@ -2,6 +2,7 @@ import useAxios from '@/hooks/axios-client';
 import type { Board } from '@/interfaces/interfaces';
 import type {
     BoardAddRequest,
+    ChangePasswordrRequest,
     ColumnAddRequest,
     ColumnPositionUpdateRequest,
     ColumnUpdateRequest,
@@ -74,6 +75,8 @@ const useApiEndpoints = () => {
         users: {
             search: (query: string, exceptIds: string[]) =>
                 axiosClient.post(`/users?search=${query}`, exceptIds),
+            changePassword: (payload: ChangePasswordrRequest) =>
+                axiosClient.patch(`/users/password`, payload),
         },
     };
 };
