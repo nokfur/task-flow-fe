@@ -76,9 +76,9 @@ const useApiEndpoints = () => {
         },
         admin: {
             boards: {
-                getTemplates: () => axiosClient.get('/admin/boards/templates'),
+                getTemplates: () => axiosClient.get('/admin/templates'),
                 addTemplate: (payload: Board) =>
-                    axiosClient.post('/admin/boards/templates', payload),
+                    axiosClient.post('/admin/templates', payload),
             },
             users: {
                 getAll: () => axiosClient.get('/admin/users'),

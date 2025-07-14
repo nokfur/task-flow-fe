@@ -176,10 +176,11 @@ const TemplateBoardManagementPage = () => {
 
     useEffect(() => {
         setLoading(true);
-        apiEndPoints.boards
+        apiEndPoints.admin.boards
             .getTemplates()
             .then(({ data }: { data: BoardGeneral[] }) => {
                 setBoards(data);
+                console.log(data);
             })
             .finally(() => setLoading(false));
     }, []);
