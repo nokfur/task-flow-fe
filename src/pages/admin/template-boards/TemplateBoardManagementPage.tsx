@@ -14,9 +14,12 @@ import {
     IconTrash,
 } from '@tabler/icons-react';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+
+dayjs.extend(relativeTime);
 
 const BoardCard: React.FC<{
     board: BoardGeneral;

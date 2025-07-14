@@ -1,10 +1,22 @@
-import type { TaskPriority, UserRole } from '@/constants/constants';
+import type {
+    BoardMemberRole,
+    TaskPriority,
+    UserRole,
+} from '@/constants/constants';
 
 export interface User {
     id: string;
     name: string;
     email: string;
     role: UserRole;
+}
+
+export interface UserDetail {
+    id: string;
+    name: string;
+    email: string;
+    role: UserRole;
+    createdAt: string;
 }
 
 export interface BoardGeneral {
@@ -24,11 +36,11 @@ export interface BoardMember {
     id: string;
     name: string;
     email: string;
-    role?: 'Owner' | 'Member' | 'Admin';
+    role?: BoardMemberRole;
 }
 
 export interface Board {
-    id?: string;
+    id: string;
     title: string;
     description: string;
     columns: Column[];

@@ -8,6 +8,7 @@ import {
     IconBrandSamsungpass,
     IconLogout,
     IconTable,
+    IconUserCog,
 } from '@tabler/icons-react';
 
 const AdminLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {
@@ -27,6 +28,11 @@ const AdminLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {
                         icon={<IconTable />}
                         title="Template Boards"
                         to="/admin/template-boards"
+                    />
+                    <SideNavItem
+                        icon={<IconUserCog />}
+                        title="Users"
+                        to="/admin/users"
                     />
                 </SideNavSection>
                 <SideNavSection title="SECURITY">

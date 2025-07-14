@@ -8,9 +8,9 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import { IconCrown, IconMail, IconUser, IconX } from '@tabler/icons-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { BoardMemberRole } from '@/constants/constants';
+import { BoardMemberRole } from '@/constants/constants';
 
 const TeamMemberAddModal: React.FC<{
     open?: boolean;
@@ -35,6 +35,19 @@ const TeamMemberAddModal: React.FC<{
 
     const [searchResults, setSearchResults] = useState<BoardMember[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+
+    const roleDetail: Partial<
+        Record<BoardMemberRole, { description: string; icon: ReactNode }>
+    > = {
+        Member: {
+            description: 'Can view and edit tasks',
+            icon: <IconUser className="h-5 w-5 text-gray-400" />,
+        },
+        Admin: {
+            description: 'Can manage board settings and members',
+            icon: <IconCrown className="h-5 w-5 text-amber-500" />,
+        },
+    };
 
     const debounce = useDebounce(email, 500);
 
@@ -171,60 +184,42 @@ const TeamMemberAddModal: React.FC<{
                                 Role
                             </label>
                             <div className="space-y-2">
-                                <label className="flex cursor-pointer items-center rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50">
-                                    <input
-                                        type="radio"
-                                        name="role"
-                                        value="Member"
-                                        checked={role === 'Member'}
-                                        onChange={(e) =>
-                                            setRole(
-                                                e.target
-                                                    .value as BoardMemberRole,
-                                            )
-                                        }
-                                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    />
-                                    <div className="ml-3 flex items-center gap-3">
-                                        <IconUser className="h-5 w-5 text-gray-400" />
-                                        <div>
-                                            <div className="text-sm font-medium">
-                                                Member
+                                {Object.entries(roleDetail).map(
+                                    ([key, detail]) => (
+                                        <label
+                                            key={key}
+                                            className="flex cursor-pointer items-center rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50">
+                                            <input
+                                                type="radio"
+                                                name="role"
+                                                value={key}
+                                                checked={key === role}
+                                                onChange={(e) =>
+                                                    setRole(
+                                                        e.target
+                                                            .value as BoardMemberRole,
+                                                    )
+                                                }
+                                                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            />
+                                            <div className="ml-3 flex items-center gap-3">
+                                                {detail.icon}
+                                                <div>
+                                                    <div className="text-sm font-medium">
+                                                        {
+                                                            BoardMemberRole[
+                                                                key as keyof typeof BoardMemberRole
+                                                            ]
+                                                        }
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {detail.description}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="text-xs text-gray-500">
-                                                Can view and edit tasks
-                                            </div>
-                                        </div>
-                                    </div>
-                                </label>
-
-                                <label className="flex cursor-pointer items-center rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50">
-                                    <input
-                                        type="radio"
-                                        name="role"
-                                        value="Admin"
-                                        checked={role === 'Admin'}
-                                        onChange={(e) =>
-                                            setRole(
-                                                e.target
-                                                    .value as BoardMemberRole,
-                                            )
-                                        }
-                                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    />
-                                    <div className="ml-3 flex items-center gap-3">
-                                        <IconCrown className="h-5 w-5 text-amber-500" />
-                                        <div>
-                                            <div className="text-sm font-medium">
-                                                Admin
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                Can manage board settings and
-                                                members
-                                            </div>
-                                        </div>
-                                    </div>
-                                </label>
+                                        </label>
+                                    ),
+                                )}
                             </div>
                         </div>
                     </div>

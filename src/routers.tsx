@@ -1,16 +1,28 @@
-import TemplateBoardManagementPage from '@/pages/admin/template-boards/TemplateBoardManagementPage';
-import PageWrapper from '@/components/common/PageWrapper';
-import ProtectedRoute from '@/components/common/ProtectedRoute';
-import { UserRole } from '@/constants/constants';
-import AdminLayout from '@/components/layout/AdminLayout';
-import AuthPage from '@/pages/AuthPage';
-import UserBoardCreatePage from '@/pages/user/UserBoardCreatePage';
-import UserBoardsPage from '@/pages/user/UserBoardsPage';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
-import TemplateBoardCreatePage from '@/pages/admin/template-boards/TemplateBoardCreatePage';
-import UserLayout from '@/components/layout/UserLayout';
-import TemplateBoardUpdatePage from '@/pages/admin/template-boards/TemplateBoardUpdatePage';
-import ChangePassword from '@/components/user/ChangePassword';
+import { UserRole } from '@/constants/constants';
+import { lazy } from 'react';
+const TemplateBoardManagementPage = lazy(
+    () => import('@/pages/admin/template-boards/TemplateBoardManagementPage'),
+);
+const PageWrapper = lazy(() => import('@/components/common/PageWrapper'));
+const ProtectedRoute = lazy(() => import('@/components/common/ProtectedRoute'));
+const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'));
+const AuthPage = lazy(() => import('@/pages/AuthPage'));
+const UserBoardCreatePage = lazy(
+    () => import('@/pages/user/UserBoardCreatePage'),
+);
+const UserBoardsPage = lazy(() => import('@/pages/user/UserBoardsPage'));
+const TemplateBoardCreatePage = lazy(
+    () => import('@/pages/admin/template-boards/TemplateBoardCreatePage'),
+);
+const UserLayout = lazy(() => import('@/components/layout/UserLayout'));
+const TemplateBoardUpdatePage = lazy(
+    () => import('@/pages/admin/template-boards/TemplateBoardUpdatePage'),
+);
+const ChangePassword = lazy(() => import('@/components/user/ChangePassword'));
+const UserManagementPage = lazy(
+    () => import('@/pages/admin/users/UserManagementPage'),
+);
 
 const router = createBrowserRouter([
     {
@@ -89,6 +101,7 @@ const router = createBrowserRouter([
                         ],
                     },
                     { path: 'change-password', element: <ChangePassword /> },
+                    { path: 'users', element: <UserManagementPage /> },
                 ],
             },
             {

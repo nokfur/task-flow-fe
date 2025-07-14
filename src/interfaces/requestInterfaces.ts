@@ -1,4 +1,4 @@
-import type { TaskPriority } from '@/constants/constants';
+import type { BoardMemberRole, TaskPriority } from '@/constants/constants';
 
 export interface LoginRequest {
     email: string;
@@ -11,7 +11,7 @@ export interface RegisterRequest {
     password: string;
 }
 
-export interface ChangePasswordrRequest {
+export interface ChangePasswordRequest {
     oldPassword: string;
     newPassword: string;
 }
@@ -19,6 +19,8 @@ export interface ChangePasswordrRequest {
 export interface BoardAddRequest {
     title: string;
     description: string;
+    templateId: string;
+    boardMembers: { memberId: string; role: BoardMemberRole }[];
 }
 
 export interface ColumnAddRequest {

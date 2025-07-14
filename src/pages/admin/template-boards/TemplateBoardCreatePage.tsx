@@ -54,6 +54,7 @@ const TemplateBoardCreatePage = () => {
 
     const formik = useFormik({
         initialValues: {
+            id: '',
             title: '',
             description: '',
             columns: [],

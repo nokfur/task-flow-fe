@@ -204,6 +204,13 @@ const UserBoardsPage = () => {
         return { filteredBoards };
     }, [activeTab, boards, sortName, sortType]);
 
+    const getCardMotionProps = (index: number) => ({
+        initial: { opacity: 0, y: 10, filter: 'blur(4px)' },
+        animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+        exit: { opacity: 0, y: -10, filter: 'blur(4px)' },
+        transition: { delay: index * 0.1, duration: 0.4 },
+    });
+
     return (
         <div className="min-h-screen bg-slate-50 px-6 py-8 md:px-12 lg:px-24">
             <h1 className="text-3xl font-bold">My Boards</h1>
@@ -283,33 +290,25 @@ const UserBoardsPage = () => {
                     {loading
                         ? Array.from({ length: 6 }).map((_, index) => (
                               <motion.div
+                                  layout
                                   key={index}
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -10 }}
-                                  transition={{
-                                      delay: index * 0.1,
-                                      duration: 0.4,
-                                  }}>
+                                  {...getCardMotionProps(index)}>
                                   <BoardCardSkeleton />
                               </motion.div>
                           ))
                         : filteredBoards.length > 0
                           ? filteredBoards.map((board, index) => (
                                 <motion.div
+                                    layout
                                     key={index}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{
-                                        delay: index * 0.1,
-                                        duration: 0.4,
-                                    }}>
+                                    {...getCardMotionProps(index)}>
                                     <BoardCard board={board} />
                                 </motion.div>
                             ))
                           : activeTab === 2 && (
                                 <motion.div
+                                    layout="position"
+                                    key={'no-boards'}
                                     className="text-center font-medium"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}

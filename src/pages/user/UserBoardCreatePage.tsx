@@ -2,7 +2,7 @@ import InputField from '@/components/common/input/InputField';
 import SpinningCircle from '@/components/common/loader/SpinningCircle';
 import { useAuthProvider } from '@/contexts/AuthContext';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
-import type { BoardMember } from '@/interfaces/interfaces';
+import { type BoardMember } from '@/interfaces/interfaces';
 import {
     getFirstLetterOfFirst2Word,
     getFormikTouchError,
@@ -17,18 +17,21 @@ import {
 } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import type React from 'react';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { AnimatePresence, motion } from 'framer-motion';
 import IconButton from '@mui/material/IconButton';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { BoardMemberRole } from '@/constants/constants';
 
 const TeamMemberAddModal = lazy(
     () => import('@/components/user/TeamMemberAddModal'),
 );
 
-interface BoardTemplate {
+interface BoardTemplatePreview {
     id: string;
     title: string;
     description: string;
@@ -41,7 +44,7 @@ interface BoardMemberRequest {
 }
 
 const TemplateCard: React.FC<{
-    template: BoardTemplate;
+    template: BoardTemplatePreview;
     selected?: boolean;
     onClick?: () => void;
 }> = ({ template, selected, onClick = () => {} }) => {
@@ -70,8 +73,10 @@ const TemplateCard: React.FC<{
 const MemberCard: React.FC<{
     member: BoardMember;
     isSelf?: boolean;
-    onDelete?: () => void;
-}> = ({ member, isSelf, onDelete = () => {} }) => {
+    onDelete?: (id: string) => void;
+    onUpdateRole?: (id: string, role: BoardMemberRole) => void;
+}> = ({ member, isSelf, onDelete = () => {}, onUpdateRole = () => {} }) => {
+    const roles: Partial<BoardMemberRole[]> = ['Member', 'Admin'];
     return (
         <div className="flex items-center justify-between rounded-lg bg-gray-100/70 px-4 py-2">
             <div className="flex items-center gap-3">
@@ -94,10 +99,29 @@ const MemberCard: React.FC<{
                     'Owner (You)'
                 ) : (
                     <div className="flex items-center gap-1">
-                        <span>{member.role}</span>
+                        <Select
+                            value={member.role}
+                            onChange={(e) =>
+                                onUpdateRole(member.id, e.target.value)
+                            }
+                            variant="standard"
+                            disableUnderline
+                            className="text-sm font-medium text-gray-700">
+                            {roles.map((role) => (
+                                <MenuItem
+                                    value={role}
+                                    className="text-sm font-medium text-gray-700">
+                                    {
+                                        BoardMemberRole[
+                                            role as keyof typeof BoardMemberRole
+                                        ]
+                                    }
+                                </MenuItem>
+                            ))}
+                        </Select>
                         <IconButton
                             className="text-red-500 hover:text-red-600"
-                            onClick={onDelete}>
+                            onClick={() => onDelete(member.id)}>
                             <IconTrash className="size-5" />
                         </IconButton>
                     </div>
@@ -110,39 +134,14 @@ const MemberCard: React.FC<{
 const validationSchema = Yup.object({
     title: Yup.string().required('Please input'),
     description: Yup.string(),
-    templateId: Yup.string().required('Please select a template'),
-    members: Yup.array(),
+    templateId: Yup.string(),
+    members: Yup.array().of(
+        Yup.object({
+            id: Yup.string().required(),
+            role: Yup.string().oneOf(Object.keys(BoardMemberRole)),
+        }),
+    ),
 });
-
-const templates: BoardTemplate[] = [
-    {
-        id: '1',
-        title: 'Kanban Board',
-        description:
-            'Classic task management with To Do, In Progress, and Done columns',
-        columns: ['To Do', 'In Progress', 'Done'],
-    },
-    {
-        id: '2',
-        title: 'Scrum Board',
-        description:
-            'Agile development with Backlog, Sprint, Testing, and Complete',
-        columns: ['Backlog', 'Sprint', 'Testing', 'Done'],
-    },
-    {
-        id: '3',
-        title: 'Marketing Campaign',
-        description:
-            'Campaign planning with Ideas, Planning, Execution, and Analysis',
-        columns: ['Ideas', 'Planning', 'Execution', 'Analysis'],
-    },
-    {
-        id: '4',
-        title: 'Custom Board',
-        description: 'Start with a blank board and create your own workflow',
-        columns: ['Custom', 'Columns'],
-    },
-];
 
 const sampleColumns: { title: string; tasks: string[] }[] = [
     {
@@ -164,8 +163,33 @@ const UserBoardCreatePage = () => {
 
     const { user } = useAuthProvider();
 
-    const [loading, setLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
+    const [boardTemplates, setBoardTemplates] = useState<
+        BoardTemplatePreview[]
+    >([]);
+
+    const [creating, setCreating] = useState(false);
+    const [gettingTemplates, setGettingTemplates] = useState(false);
+    const [isOpenMemberModal, setIsOpenMemberModal] = useState(false);
+
+    useEffect(() => {
+        setGettingTemplates(true);
+        apiEndpoints.boards
+            .getTemplates()
+            .then(({ data }: { data: BoardTemplatePreview[] }) => {
+                const customBoard = {
+                    id: '',
+                    title: 'Custom Board',
+                    description:
+                        'Start with a blank board and create your own workflow',
+                    columns: ['Custom', 'Columns'],
+                };
+
+                setBoardTemplates([...data, customBoard]);
+            })
+            .finally(() => {
+                setGettingTemplates(false);
+            });
+    }, []);
 
     const formik = useFormik({
         initialValues: {
@@ -179,7 +203,7 @@ const UserBoardCreatePage = () => {
         onSubmit: (values) => {
             const payload = {
                 ...values,
-                members: values.members.map(
+                boardMembers: values.members.map(
                     (m: BoardMember) =>
                         ({
                             memberId: m.id,
@@ -188,24 +212,41 @@ const UserBoardCreatePage = () => {
                 ),
             };
 
-            setLoading(true);
+            setCreating(true);
             apiEndpoints.boards
                 .add(payload)
                 .then(() => {
                     toast.success('Board add successfully!');
+                    formik.resetForm();
                 })
-                .finally(() => setLoading(false));
+                .finally(() => setCreating(false));
         },
     });
 
     const getError = getFormikTouchError(formik);
 
+    const handleRemoveMember = (id: string) => {
+        formik.setFieldValue(
+            'members',
+            formik.values.members.filter((m) => m.id !== id),
+        );
+    };
+
+    const handleUpdateMemberRole = (id: string, role: BoardMemberRole) => {
+        formik.setFieldValue(
+            'members',
+            formik.values.members.map((m) =>
+                m.id === id ? { ...m, role } : m,
+            ),
+        );
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 px-6 py-8 md:px-12 lg:px-24">
             <Suspense fallback={<CircularProgress />}>
                 <TeamMemberAddModal
-                    open={isOpen}
-                    onClose={() => setIsOpen(false)}
+                    open={isOpenMemberModal}
+                    onClose={() => setIsOpenMemberModal(false)}
                     memberIds={formik.values.members.map((m) => m.id)}
                     onSuccess={(newMember) => {
                         formik.setFieldValue('members', [
@@ -294,27 +335,30 @@ const UserBoardCreatePage = () => {
                             📝 Choose Template
                         </h5>
 
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            {templates.map((template, index) => (
-                                <TemplateCard
-                                    template={template}
-                                    selected={
-                                        formik.values.templateId === template.id
-                                    }
-                                    onClick={() =>
-                                        formik.setFieldValue(
-                                            'templateId',
-                                            template.id,
-                                        )
-                                    }
-                                    key={index}
-                                />
-                            ))}
-                            <p
-                                className={`overflow-hidden text-sm font-medium text-red-500 transition-all duration-300 ease-in-out ${getError('templateId') ? 'h-4.5 translate-y-0 opacity-100' : 'h-0 translate-y-1 opacity-0'}`}>
-                                {getError('templateId')}
-                            </p>
-                        </div>
+                        {gettingTemplates ? (
+                            <div className="flex justify-center">
+                                <SpinningCircle loading={gettingTemplates} />
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                {boardTemplates.map((template, index) => (
+                                    <TemplateCard
+                                        template={template}
+                                        selected={
+                                            formik.values.templateId ===
+                                            template.id
+                                        }
+                                        onClick={() =>
+                                            formik.setFieldValue(
+                                                'templateId',
+                                                template.id,
+                                            )
+                                        }
+                                        key={index}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div>
@@ -334,15 +378,10 @@ const UserBoardCreatePage = () => {
                                         <MemberCard
                                             member={member}
                                             isSelf={member.id === user?.id}
-                                            onDelete={() => {
-                                                formik.setFieldValue(
-                                                    'members',
-                                                    formik.values.members.filter(
-                                                        (m) =>
-                                                            m.id !== member.id,
-                                                    ),
-                                                );
-                                            }}
+                                            onDelete={handleRemoveMember}
+                                            onUpdateRole={
+                                                handleUpdateMemberRole
+                                            }
                                         />
                                     </motion.div>
                                 ))}
@@ -352,7 +391,7 @@ const UserBoardCreatePage = () => {
                         <Button
                             className="mt-3 w-full rounded-lg border-2 border-dashed border-slate-300 py-2 text-gray-600 normal-case hover:border-blue-400 hover:text-blue-700"
                             startIcon={<IconUsersPlus />}
-                            onClick={() => setIsOpen(true)}>
+                            onClick={() => setIsOpenMemberModal(true)}>
                             Add Team Member
                         </Button>
                     </div>
@@ -365,8 +404,8 @@ const UserBoardCreatePage = () => {
                             Cancel
                         </Button>
                         <Button
-                            className={`px-5 text-white normal-case duration-300 hover:bg-blue-700 ${loading ? 'pointer-events-none bg-gray-300' : 'bg-blue-600'}`}
-                            startIcon={<SpinningCircle loading={loading} />}
+                            className={`px-5 text-white normal-case duration-300 hover:bg-blue-700 ${creating ? 'pointer-events-none bg-gray-300' : 'bg-blue-600'}`}
+                            startIcon={<SpinningCircle loading={creating} />}
                             type="submit">
                             Create Board
                         </Button>

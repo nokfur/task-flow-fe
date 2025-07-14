@@ -2,7 +2,7 @@ import useAxios from '@/hooks/axios-client';
 import type { Board } from '@/interfaces/interfaces';
 import type {
     BoardAddRequest,
-    ChangePasswordrRequest,
+    ChangePasswordRequest,
     ColumnAddRequest,
     ColumnPositionUpdateRequest,
     ColumnUpdateRequest,
@@ -71,11 +71,12 @@ const useApiEndpoints = () => {
         users: {
             search: (query: string, exceptIds: string[]) =>
                 axiosClient.post(`/users?search=${query}`, exceptIds),
-            changePassword: (payload: ChangePasswordrRequest) =>
+            changePassword: (payload: ChangePasswordRequest) =>
                 axiosClient.patch(`/users/password`, payload),
         },
         admin: {
             boards: {
+                getTemplates: () => axiosClient.get('/admin/boards/templates'),
                 addTemplate: (payload: Board) =>
                     axiosClient.post('/admin/boards/templates', payload),
             },
