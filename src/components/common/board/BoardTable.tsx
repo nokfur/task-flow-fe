@@ -1,14 +1,69 @@
 import ColumnCard from '@/components/common/board/ColumnCard';
 import type { Column, Label, Task } from '@/interfaces/interfaces';
 import Button from '@mui/material/Button';
+import Skeleton from '@mui/material/Skeleton';
 import { IconColumnInsertLeft } from '@tabler/icons-react';
 import {
     AnimatePresence,
+    motion,
     Reorder,
     type PanInfo,
     type Point,
 } from 'framer-motion';
-import { createContext, useContext, useRef, useState } from 'react';
+import React, { createContext, useContext, useRef, useState } from 'react';
+
+const ColumnSkeleton: React.FC<{ id: React.Key }> = ({ id }) => (
+    <motion.div
+        key={id}
+        initial={{
+            opacity: 0,
+            width: 0,
+            height: 0,
+        }}
+        animate={{
+            opacity: 1,
+            width: 'auto',
+            height: 'auto',
+            scale: 1,
+        }}
+        exit={{
+            opacity: 0,
+            width: 0,
+            height: 0,
+        }}>
+        <div className="w-xs rounded-xl border border-gray-200 bg-white">
+            <div className="rounded-t-xl bg-slate-100 px-4 py-2">
+                <Skeleton className="h-12 w-full" />
+            </div>
+
+            <div className="flex flex-col gap-2 p-2">
+                {Array.from({
+                    length: 4,
+                }).map((_, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{
+                            opacity: 0,
+                            height: 0,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            height: 'auto',
+                        }}
+                        exit={{
+                            opacity: 0,
+                            height: 0,
+                        }}>
+                        <div className="rounded-lg border border-gray-200 bg-white px-3 py-3">
+                            <Skeleton className="w-30" />
+                            <Skeleton className="h-12 w-full" />
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    </motion.div>
+);
 
 interface TaskDragState {
     draggedItem: Task | null;
@@ -49,6 +104,7 @@ interface BoardContextType {
 const BoardContext = createContext<BoardContextType | null>(null);
 
 const BoardTable: React.FC<{
+    loading?: boolean;
     columns: Column[];
     labels: Label[];
 
@@ -74,7 +130,13 @@ const BoardTable: React.FC<{
     onUpdateLabel: BoardContextType['onUpdateLabel'];
     onRemoveLabel: BoardContextType['onRemoveLabel'];
 }> = (props) => {
-    const { columns, onAddColumn, onReorderColumn, onReorderTask } = props;
+    const {
+        columns,
+        onAddColumn,
+        onReorderColumn,
+        onReorderTask,
+        loading = false,
+    } = props;
 
     const [taskDragState, setTaskDragState] = useState<TaskDragState>({
         draggedItem: null,
@@ -114,6 +176,7 @@ const BoardTable: React.FC<{
             ...prev,
             overColumn: dropInfo.columnId,
             insertionIndex: dropInfo.insertIndex,
+            mousePosition: { x: info.point.x, y: info.point.y },
         }));
     };
 
@@ -210,54 +273,75 @@ const BoardTable: React.FC<{
                 taskDragState: taskDragState,
                 taskRefs: taskRefs,
             }}>
-            <Reorder.Group
-                axis="x"
-                as="div"
-                values={columns}
-                onReorder={onReorderColumn}>
-                <div className="flex items-start gap-4">
-                    <AnimatePresence mode="sync">
-                        {columns.map((column) => (
-                            <Reorder.Item
-                                ref={(el) =>
-                                    (columnRefs.current[column.id] = el)
-                                }
-                                as="div"
-                                value={column}
-                                key={column.id} // Prefer stable ID
-                                initial={{
-                                    opacity: 0,
-                                    width: 0,
-                                    height: 0,
-                                }}
-                                animate={{
-                                    opacity: 1,
-                                    width: 'auto',
-                                    height: 'auto',
-                                    scale: 1,
-                                }}
-                                exit={{
-                                    opacity: 0,
-                                    width: 0,
-                                    height: 0,
-                                }}
-                                drag
-                                whileDrag={{
-                                    scale: 1.05,
-                                }}>
-                                <ColumnCard column={column} />
-                            </Reorder.Item>
-                        ))}
-                    </AnimatePresence>
+            <div className="relative grow">
+                <div className="absolute inset-0 flex overflow-x-auto">
+                    <div className="flex grow px-8 pt-4 pb-8">
+                        <Reorder.Group
+                            axis="x"
+                            as="div"
+                            className="flex h-full items-start gap-4"
+                            values={columns}
+                            onReorder={onReorderColumn}>
+                            <AnimatePresence mode="sync">
+                                {loading
+                                    ? Array.from({ length: 4 }).map(
+                                          (_, index) => (
+                                              <ColumnSkeleton
+                                                  key={index}
+                                                  id={index}
+                                              />
+                                          ),
+                                      )
+                                    : columns.map((column) => (
+                                          <div
+                                              key={column.id}
+                                              className="flex h-full">
+                                              <Reorder.Item
+                                                  ref={(el) => {
+                                                      columnRefs.current[
+                                                          column.id
+                                                      ] = el;
+                                                  }}
+                                                  as="div"
+                                                  className="grow"
+                                                  value={column}
+                                                  key={column.id} // Prefer stable ID
+                                                  initial={{
+                                                      opacity: 0,
+                                                      width: 0,
+                                                      height: 0,
+                                                  }}
+                                                  animate={{
+                                                      opacity: 1,
+                                                      width: 'auto',
+                                                      height: 'auto',
+                                                      scale: 1,
+                                                  }}
+                                                  exit={{
+                                                      opacity: 0,
+                                                      width: 0,
+                                                      height: 0,
+                                                  }}
+                                                  drag
+                                                  whileDrag={{
+                                                      scale: 1.05,
+                                                  }}>
+                                                  <ColumnCard column={column} />
+                                              </Reorder.Item>
+                                          </div>
+                                      ))}
+                            </AnimatePresence>
 
-                    <Button
-                        className="w-xs shrink-0 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-gray-500 normal-case hover:bg-gray-100"
-                        startIcon={<IconColumnInsertLeft />}
-                        onClick={handleAddColumn}>
-                        Add column
-                    </Button>
+                            <Button
+                                className="w-xs shrink-0 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-gray-500 normal-case hover:bg-gray-100"
+                                startIcon={<IconColumnInsertLeft />}
+                                onClick={handleAddColumn}>
+                                Add column
+                            </Button>
+                        </Reorder.Group>
+                    </div>
                 </div>
-            </Reorder.Group>
+            </div>
         </BoardContext.Provider>
     );
 };

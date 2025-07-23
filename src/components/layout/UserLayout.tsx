@@ -3,7 +3,7 @@ import React, { type ReactNode } from 'react';
 
 const UserLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {
     return (
-        <div>
+        <div className="flex min-h-screen flex-col">
             <Header />
             {children}
         </div>

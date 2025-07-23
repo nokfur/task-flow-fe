@@ -1,6 +1,10 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { UserRole } from '@/constants/constants';
 import { lazy } from 'react';
+
+const UserBoardUpdatePage = lazy(
+    () => import('@/pages/user/boards/UserBoardUpdatePage'),
+);
 const TemplateBoardManagementPage = lazy(
     () => import('@/pages/admin/template-boards/TemplateBoardManagementPage'),
 );
@@ -9,9 +13,9 @@ const ProtectedRoute = lazy(() => import('@/components/common/ProtectedRoute'));
 const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'));
 const AuthPage = lazy(() => import('@/pages/AuthPage'));
 const UserBoardCreatePage = lazy(
-    () => import('@/pages/user/UserBoardCreatePage'),
+    () => import('@/pages/user/boards/UserBoardCreatePage'),
 );
-const UserBoardsPage = lazy(() => import('@/pages/user/UserBoardsPage'));
+const UserBoardsPage = lazy(() => import('@/pages/user/boards/UserBoardsPage'));
 const TemplateBoardCreatePage = lazy(
     () => import('@/pages/admin/template-boards/TemplateBoardCreatePage'),
 );
@@ -63,6 +67,10 @@ const router = createBrowserRouter([
                             {
                                 path: 'create',
                                 element: <UserBoardCreatePage />,
+                            },
+                            {
+                                path: ':boardId',
+                                element: <UserBoardUpdatePage />,
                             },
                         ],
                     },

@@ -31,7 +31,7 @@ const Header = () => {
     };
 
     return (
-        <div className="sticky top-0 flex w-full flex-wrap items-center justify-center gap-3 bg-white/70 px-6 py-3 shadow-sm backdrop-blur-sm md:px-12 lg:px-24">
+        <div className="sticky top-0 z-50 flex w-full flex-wrap items-center justify-center gap-3 bg-white/70 px-6 py-0.5 shadow-sm backdrop-blur-sm md:px-12 lg:px-24">
             <div>
                 <Link to="/" className="text-3xl font-bold text-blue-600">
                     TaskFlow
@@ -41,12 +41,13 @@ const Header = () => {
                 <InputField
                     placeholder="Search boards"
                     startIcon={<IconSearch />}
+                    className="py-1!"
                 />
             </div>
 
             <div className="flex items-center justify-center gap-4">
                 <Button
-                    className="bg-blue-600 px-4 font-medium text-gray-50 normal-case transition duration-200 hover:bg-blue-700 hover:shadow-md"
+                    className="bg-blue-600 px-4 py-1 font-medium text-gray-50 normal-case transition duration-200 hover:bg-blue-700 hover:shadow-md"
                     startIcon={<IconTablePlus />}
                     component={Link}
                     to="/boards/create">
@@ -55,9 +56,13 @@ const Header = () => {
                 <div>
                     <IconButton onClick={handleClick}>
                         <Avatar
-                            className="size-9 cursor-pointer bg-gradient-to-br from-blue-500 to-purple-800 transition-all duration-200 hover:opacity-80"
+                            className="size-7 cursor-pointer bg-gradient-to-br from-blue-500 to-purple-800 transition-all duration-200 hover:opacity-80"
                             alt={user?.name}
-                            children={getFirstLetterOfFirst2Word(user?.name)}
+                            children={
+                                <span className="text-sm">
+                                    {getFirstLetterOfFirst2Word(user?.name)}
+                                </span>
+                            }
                         />
                     </IconButton>
                     <Menu

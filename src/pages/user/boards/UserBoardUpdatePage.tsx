@@ -11,7 +11,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-const TemplateBoardUpdatePage = () => {
+const UserBoardUpdatePage = () => {
     const apiEndPoints = useApiEndpoints();
     const { boardId = '' } = useParams();
 
@@ -157,34 +157,29 @@ const TemplateBoardUpdatePage = () => {
     };
 
     return (
-        <div className="-mx-6 -my-8 flex grow bg-slate-50 md:-mx-12">
-            <div className="flex grow flex-col">
-                <div className="w-full bg-white">
-                    <div className="border-b border-gray-200 px-8 py-4">
-                        <h1 className="text-3xl font-bold">
-                            Manage Board Template
-                        </h1>
-
-                        <div className="mt-4 w-full space-y-4 ps-8">
-                            {loading ? (
-                                <>
-                                    <Skeleton className="m-0 h-10 w-36" />
-                                    <Skeleton className="h-16 w-full" />
-                                </>
-                            ) : (
-                                <>
-                                    <div className="mb-1 max-w-84">
-                                        <EditableText
-                                            placeholder="Board title (e.g, Website Redesign Project)"
-                                            value={board.title}
-                                            onSave={(val) =>
-                                                handleUpdateBoard(val, 'title')
-                                            }
-                                            className="text-lg font-medium"
-                                        />
-                                    </div>
-
+        <div className="flex grow flex-col bg-slate-50">
+            <div className="w-full bg-white/50 backdrop-blur-sm">
+                <div className="border-b border-gray-200 px-8 py-2">
+                    <div className="w-full space-y-4 ps-8">
+                        {loading ? (
+                            <>
+                                <Skeleton className="m-0 h-10 w-36" />
+                                <Skeleton className="h-16 w-full" />
+                            </>
+                        ) : (
+                            <>
+                                <div className="mb-1 max-w-84">
                                     <EditableText
+                                        placeholder="Board title (e.g, Website Redesign Project)"
+                                        value={board.title}
+                                        onSave={(val) =>
+                                            handleUpdateBoard(val, 'title')
+                                        }
+                                        className="text-lg font-medium"
+                                    />
+                                </div>
+
+                                {/* <EditableText
                                         placeholder="Explain when and how teams should use this template..."
                                         value={board.description}
                                         onSave={(val) =>
@@ -195,34 +190,33 @@ const TemplateBoardUpdatePage = () => {
                                         }
                                         isArea
                                         className="text-sm"
-                                    />
-                                </>
-                            )}
-                        </div>
+                                    /> */}
+                            </>
+                        )}
                     </div>
                 </div>
-
-                <BoardTable
-                    loading={loading}
-                    columns={board.columns}
-                    labels={board.labels}
-                    onReorderColumn={handleReorderColumns}
-                    onAddColumn={handleAddColumn}
-                    onUpdateColumn={handleUpdateColumn}
-                    onRemoveColumn={handleRemoveColumn}
-                    onAddTask={handleAddTask}
-                    onUpdateTask={handleUpdateTask}
-                    onRemoveTask={handleRemoveTask}
-                    onRemoveAllTasks={handleRemoveAllTasks}
-                    onToggleLabel={handleToggleLabel}
-                    onReorderTask={handleReorderTask}
-                    onAddLabel={handleAddLabel}
-                    onUpdateLabel={handleUpdateLabel}
-                    onRemoveLabel={handleRemoveLabel}
-                />
             </div>
+
+            <BoardTable
+                loading={loading}
+                columns={board.columns}
+                labels={board.labels}
+                onReorderColumn={handleReorderColumns}
+                onAddColumn={handleAddColumn}
+                onUpdateColumn={handleUpdateColumn}
+                onRemoveColumn={handleRemoveColumn}
+                onAddTask={handleAddTask}
+                onUpdateTask={handleUpdateTask}
+                onRemoveTask={handleRemoveTask}
+                onRemoveAllTasks={handleRemoveAllTasks}
+                onToggleLabel={handleToggleLabel}
+                onReorderTask={handleReorderTask}
+                onAddLabel={handleAddLabel}
+                onUpdateLabel={handleUpdateLabel}
+                onRemoveLabel={handleRemoveLabel}
+            />
         </div>
     );
 };
 
-export default TemplateBoardUpdatePage;
+export default UserBoardUpdatePage;

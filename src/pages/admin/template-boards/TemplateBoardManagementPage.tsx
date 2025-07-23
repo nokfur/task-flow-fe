@@ -180,7 +180,6 @@ const TemplateBoardManagementPage = () => {
             .getTemplates()
             .then(({ data }: { data: BoardGeneral[] }) => {
                 setBoards(data);
-                console.log(data);
             })
             .finally(() => setLoading(false));
     }, []);
@@ -206,63 +205,59 @@ const TemplateBoardManagementPage = () => {
 
     return (
         <div>
-            <div>
-                <div className="flex items-center justify-between">
-                    <h1 className="mb-4 text-2xl font-bold">
-                        Template Board Management
-                    </h1>
+            <div className="flex items-center justify-between">
+                <h1 className="mb-4 text-2xl font-bold">
+                    Template Board Management
+                </h1>
 
-                    <Button
-                        className="bg-blue-600 px-4 text-gray-50 normal-case duration-300 hover:bg-blue-700"
-                        startIcon={<IconTablePlus />}
-                        component={Link}
-                        to="create">
-                        Create Template
-                    </Button>
-                </div>
-                <p className="mb-6 text-gray-700">
-                    Manage your template boards here.
-                </p>
+                <Button
+                    className="bg-blue-600 px-4 text-gray-50 normal-case duration-300 hover:bg-blue-700"
+                    startIcon={<IconTablePlus />}
+                    component={Link}
+                    to="create">
+                    Create Template
+                </Button>
+            </div>
+            <p className="mb-6 text-gray-700">
+                Manage your template boards here.
+            </p>
 
-                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <AnimatePresence mode="sync">
-                        {loading ? (
-                            Array.from({ length: 6 }).map((_, index) => (
-                                <motion.div
-                                    layout
-                                    key={`skeleton-${index}`}
-                                    {...getCardMotionProps(index)}>
-                                    <BoardCardSkeleton />
-                                </motion.div>
-                            ))
-                        ) : boards.length > 0 ? (
-                            boards.map((board, index) => (
-                                <motion.div
-                                    layout
-                                    key={board.id}
-                                    {...getCardMotionProps(index)}>
-                                    <BoardCard
-                                        board={board}
-                                        onRemove={handleRemoveBoard}
-                                        isRemoving={
-                                            board.id === removingBoardId
-                                        }
-                                    />
-                                </motion.div>
-                            ))
-                        ) : (
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <AnimatePresence mode="sync">
+                    {loading ? (
+                        Array.from({ length: 6 }).map((_, index) => (
                             <motion.div
-                                className="text-center font-medium"
-                                key="no-boards"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.5 }}>
-                                There aren't any templates
+                                layout
+                                key={`skeleton-${index}`}
+                                {...getCardMotionProps(index)}>
+                                <BoardCardSkeleton />
                             </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                        ))
+                    ) : boards.length > 0 ? (
+                        boards.map((board, index) => (
+                            <motion.div
+                                layout
+                                key={board.id}
+                                {...getCardMotionProps(index)}>
+                                <BoardCard
+                                    board={board}
+                                    onRemove={handleRemoveBoard}
+                                    isRemoving={board.id === removingBoardId}
+                                />
+                            </motion.div>
+                        ))
+                    ) : (
+                        <motion.div
+                            className="text-center font-medium"
+                            key="no-boards"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.5 }}>
+                            There aren't any templates
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

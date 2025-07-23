@@ -60,7 +60,7 @@ const AdminLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {
                             Welcome, {user?.name}!
                         </p>
                     </div>
-                    <div className="min-h-screen bg-slate-50 px-6 py-8 md:px-12">
+                    <div className="flex min-h-screen px-6 py-8 md:px-12">
                         {children}
                     </div>
                 </div>

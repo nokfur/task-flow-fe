@@ -31,7 +31,12 @@ createRoot(document.getElementById('root')!).render(
             <AuthProvider>
                 <ThemeProvider theme={THEME}>
                     <AnimatePresence mode="wait">
-                        <Suspense fallback={<SpinningCircle loading />}>
+                        <Suspense
+                            fallback={
+                                <div className="flex h-screen items-center justify-center text-purple-500">
+                                    <SpinningCircle size={7} loading />
+                                </div>
+                            }>
                             <RouterProvider router={router} />
                         </Suspense>
                     </AnimatePresence>

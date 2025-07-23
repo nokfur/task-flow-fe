@@ -1,7 +1,20 @@
 import CircularProgress from '@mui/material/CircularProgress';
 import React from 'react';
 
-const SpinningCircle: React.FC<{ loading?: boolean; size?: number }> = ({
+interface SpinningCircleProps {
+    /**
+     * @default false
+     */
+    loading?: boolean;
+
+    /**
+     * Size of the spinner (in Tailwind units)
+     * @default 5
+     */
+    size?: number;
+}
+
+const SpinningCircle: React.FC<SpinningCircleProps> = ({
     loading = false,
     size = 5,
 }) => {

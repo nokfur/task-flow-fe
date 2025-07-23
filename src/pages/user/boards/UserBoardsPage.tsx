@@ -11,18 +11,31 @@ import {
     IconTableColumn,
     IconTablePlus,
     IconTag,
+    IconTrash,
 } from '@tabler/icons-react';
 import Button from '@mui/material/Button';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
 import Skeleton from '@mui/material/Skeleton';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import ConfirmationDialog from '@/components/common/ConfirmationDialog';
+import Tooltip from '@mui/material/Tooltip';
+import SpinningCircle from '@/components/common/loader/SpinningCircle';
+import IconButton from '@mui/material/IconButton';
 
 dayjs.extend(relativeTime);
 
-const BoardCard: React.FC<{ board: BoardGeneral }> = ({ board }) => {
+const BoardCard: React.FC<{
+    board: BoardGeneral;
+    onRemove?: (boardId: string) => void;
+    isRemoving?: boolean;
+}> = ({ board, onRemove = () => {}, isRemoving = false }) => {
+    const navigate = useNavigate();
+
+    const [openRemoveConfirmation, setOpenRemoveConfirmation] = useState(false);
+
     const colors = [
         'before:bg-blue-600',
         'before:bg-green-600',
@@ -34,62 +47,98 @@ const BoardCard: React.FC<{ board: BoardGeneral }> = ({ board }) => {
     ];
 
     return (
-        <div className="relative flex h-full cursor-pointer flex-col justify-center overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <>
+            <ConfirmationDialog
+                open={openRemoveConfirmation}
+                onClose={() => setOpenRemoveConfirmation(false)}
+                onConfirm={() => onRemove(board.id)}
+                title="Are you sure to remove this board?"
+                description="There is no undo!"
+            />
+
             <div
-                className={`before:absolute before:top-0 before:right-0 before:h-1 before:w-full ${colors[Math.floor(Math.random() * colors.length)]} before:content-[""]`}>
-                <h6 className="text-lg font-semibold">{board.title}</h6>
-                <p className="mt-3 text-sm text-gray-600">
-                    {board.description}
-                </p>
+                className="relative flex h-full cursor-pointer flex-col justify-center overflow-hidden rounded-xl border border-blue-200 bg-white px-6 pt-5 pb-7 duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                onClick={() => navigate(board.id)}>
+                <div
+                    className={`before:absolute before:top-0 before:right-0 before:h-1 before:w-full ${colors[Math.floor(Math.random() * colors.length)]} before:content-[""]`}>
+                    <div className="flex items-start justify-between">
+                        <h6 className="text-lg font-semibold">{board.title}</h6>
 
-                <div className="my-4 flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                        <IconTableColumn className="size-4 text-orange-500" />
-                        <span className="text-sm text-gray-600">
-                            {board.columnCount} Lists
-                        </span>
+                        <Tooltip
+                            title="Remove template"
+                            onClick={(e) => e.stopPropagation()}>
+                            {isRemoving ? (
+                                <div className="cursor-default text-gray-500">
+                                    <SpinningCircle
+                                        loading={isRemoving}
+                                        size={4.5}
+                                    />
+                                </div>
+                            ) : (
+                                <IconButton
+                                    className="text-red-500 hover:text-red-600"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenRemoveConfirmation(true);
+                                    }}>
+                                    <IconTrash className="size-4.5" />
+                                </IconButton>
+                            )}
+                        </Tooltip>
+                    </div>
+                    <p className="mt-3 text-sm text-gray-600">
+                        {board.description}
+                    </p>
+
+                    <div className="my-4 flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                            <IconTableColumn className="size-4 text-orange-500" />
+                            <span className="text-sm text-gray-600">
+                                {board.columnCount} Lists
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                            <IconChecklist className="size-4 text-green-500" />
+                            <span className="text-sm text-gray-600">
+                                {board.taskCount} Tasks
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                            <IconTag className="size-4 text-yellow-500" />
+                            <span className="text-sm text-gray-600">
+                                {board.labelCount} Labels
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
-                        <IconChecklist className="size-4 text-green-500" />
-                        <span className="text-sm text-gray-600">
-                            {board.taskCount} Tasks
+                    <div className="flex items-center justify-between">
+                        <AvatarGroup
+                            max={4}
+                            slotProps={{
+                                surplus: {
+                                    className:
+                                        'size-6 text-xs bg-gradient-to-br from-blue-500 to-purple-800 text-white',
+                                },
+                            }}>
+                            {board.members.map((member, index) => (
+                                <Avatar
+                                    key={index}
+                                    className="size-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-800 text-xs text-white"
+                                    alt={member.name}>
+                                    {getFirstLetterOfFirst2Word(member.name)}
+                                </Avatar>
+                            ))}
+                        </AvatarGroup>
+
+                        <span className="text-xs text-gray-600">
+                            Updated {dayjs(board.updatedAt).fromNow()}
                         </span>
                     </div>
-
-                    <div className="flex items-center gap-1">
-                        <IconTag className="size-4 text-yellow-500" />
-                        <span className="text-sm text-gray-600">
-                            {board.labelCount} Labels
-                        </span>
-                    </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <AvatarGroup
-                        max={4}
-                        slotProps={{
-                            surplus: {
-                                className:
-                                    'size-6 text-xs bg-gradient-to-br from-blue-500 to-purple-800 text-white',
-                            },
-                        }}>
-                        {board.members.map((member, index) => (
-                            <Avatar
-                                key={index}
-                                className="size-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-800 text-xs text-white"
-                                alt={member.name}>
-                                {getFirstLetterOfFirst2Word(member.name)}
-                            </Avatar>
-                        ))}
-                    </AvatarGroup>
-
-                    <span className="text-xs text-gray-600">
-                        Updated {dayjs(board.updatedAt).fromNow()}
-                    </span>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
@@ -161,6 +210,7 @@ const UserBoardsPage = () => {
 
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
+    const [removingBoardId, setRemovingBoardId] = useState<string | null>(null);
 
     const [sortName, setSortName] = useState<'update' | 'name'>('update');
     const [sortType, setSortType] = useState<'asc' | 'desc'>('asc');
@@ -203,6 +253,18 @@ const UserBoardsPage = () => {
 
         return { filteredBoards };
     }, [activeTab, boards, sortName, sortType]);
+
+    const handleRemoveBoard = (boardId: string) => {
+        setRemovingBoardId(boardId);
+        apiEndPoints.boards
+            .delete(boardId)
+            .then(() => {
+                setBoards((prev) => prev.filter((b) => b.id !== boardId));
+            })
+            .finally(() => {
+                setRemovingBoardId(null);
+            });
+    };
 
     const getCardMotionProps = (index: number) => ({
         initial: { opacity: 0, y: 10, filter: 'blur(4px)' },
@@ -300,9 +362,15 @@ const UserBoardsPage = () => {
                           ? filteredBoards.map((board, index) => (
                                 <motion.div
                                     layout
-                                    key={index}
+                                    key={board.id}
                                     {...getCardMotionProps(index)}>
-                                    <BoardCard board={board} />
+                                    <BoardCard
+                                        board={board}
+                                        onRemove={handleRemoveBoard}
+                                        isRemoving={
+                                            board.id === removingBoardId
+                                        }
+                                    />
                                 </motion.div>
                             ))
                           : activeTab === 2 && (

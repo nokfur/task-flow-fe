@@ -105,7 +105,7 @@ const ColumnCard: React.FC<{
                     <motion.div
                         layoutId={`task-indicator`}
                         transition={{ duration: 0.15 }}>
-                        <div className="relative z-40 mb-2 h-26 w-full rounded-xl border-2 border-dashed border-blue-300 bg-blue-100"></div>
+                        <div className="relative z-40 h-26 w-full rounded-xl border-2 border-dashed border-blue-300 bg-blue-100"></div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -113,184 +113,196 @@ const ColumnCard: React.FC<{
     };
 
     return (
-        <motion.div animate={{ width: isCollapsed ? 56 : 'auto' }}>
-            {isCollapsed ? (
-                <div
-                    className="flex cursor-pointer items-center gap-2 overflow-hidden rounded-xl border border-gray-200 bg-white py-2 pb-4"
-                    style={{ writingMode: 'vertical-rl' }}>
-                    <IconButton
-                        className="rounded-lg"
-                        onClick={() => setIsCollapsed(false)}>
-                        <Tooltip title="Expand column">
-                            <IconArrowsMoveHorizontal className="size-4.5" />
-                        </Tooltip>
-                    </IconButton>
-                    <p className="text-sm font-semibold">{column.title}</p>
-                    <p className="text-sm">{column.tasks.length}</p>
-                </div>
-            ) : (
-                <div className="w-xs cursor-pointer rounded-xl border border-gray-200 bg-white">
-                    <ConfirmationDialog
-                        open={openRemoveConfirmation}
-                        onClose={() => setOpenRemoveConfirmation(false)}
-                        onConfirm={handleRemoveColumn}
-                        title="Are you sure to remove this column?"
-                        description="This will remove this column from the board. There is no undo."
-                    />
+        <>
+            <ConfirmationDialog
+                open={openRemoveConfirmation}
+                onClose={() => setOpenRemoveConfirmation(false)}
+                onConfirm={handleRemoveColumn}
+                title="Are you sure to remove this column?"
+                description="This will remove this column from the board. There is no undo."
+            />
 
-                    <ConfirmationDialog
-                        open={openRemoveAllTaskConfirmation}
-                        onClose={() => setOpenRemoveAllTaskConfirmation(false)}
-                        onConfirm={handleRemoveAllTasks}
-                        title="Are you sure to remove all the tasks this column?"
-                        description="This will remove all the tasks from this column from the board. There is no undo."
-                    />
+            <ConfirmationDialog
+                open={openRemoveAllTaskConfirmation}
+                onClose={() => setOpenRemoveAllTaskConfirmation(false)}
+                onConfirm={handleRemoveAllTasks}
+                title="Are you sure to remove all the tasks this column?"
+                description="This will remove all the tasks from this column from the board. There is no undo."
+            />
 
-                    <div className="flex items-center justify-between rounded-t-xl bg-slate-100 px-4 py-2">
-                        <EditableText
-                            value={column.title}
-                            placeholder="Column title (e.g, To Do, In Progress, Done)"
-                            className="font-semibold"
-                            onSave={handleUpdateColumnTitle}
-                        />
+            <motion.div
+                animate={{ width: isCollapsed ? 56 : 'auto' }}
+                className="h-full">
+                {isCollapsed ? (
+                    <div
+                        className="flex cursor-pointer items-center gap-2 overflow-hidden rounded-xl border border-gray-200 bg-white py-2 pb-4"
+                        style={{ writingMode: 'vertical-rl' }}>
+                        <IconButton
+                            className="rounded-lg"
+                            onClick={() => setIsCollapsed(false)}>
+                            <Tooltip title="Expand column">
+                                <IconArrowsMoveHorizontal className="size-4.5" />
+                            </Tooltip>
+                        </IconButton>
+                        <p className="text-sm font-semibold">{column.title}</p>
+                        <p className="text-sm">{column.tasks.length}</p>
+                    </div>
+                ) : (
+                    <div className="flex max-h-full w-xs cursor-pointer flex-col rounded-xl border border-gray-200 bg-white">
+                        <div className="flex items-center justify-between rounded-t-xl bg-slate-100 px-4 py-2">
+                            <EditableText
+                                value={column.title}
+                                placeholder="Column title (e.g, To Do, In Progress, Done)"
+                                className="font-semibold"
+                                onSave={handleUpdateColumnTitle}
+                            />
 
-                        <div className="flex items-center gap-2">
-                            <IconButton
-                                className="rounded-lg"
-                                onClick={() => setIsCollapsed(true)}>
-                                <Tooltip title="Collapse column">
-                                    <IconArrowsDiagonalMinimize className="size-4.5" />
-                                </Tooltip>
-                            </IconButton>
-
-                            <div>
+                            <div className="flex items-center gap-2">
                                 <IconButton
                                     className="rounded-lg"
-                                    onClick={handleClick}>
-                                    <IconDots className="size-4.5" />
+                                    onClick={() => setIsCollapsed(true)}>
+                                    <Tooltip title="Collapse column">
+                                        <IconArrowsDiagonalMinimize className="size-4.5" />
+                                    </Tooltip>
                                 </IconButton>
 
-                                <Menu
-                                    anchorEl={anchorEl}
-                                    open={open}
-                                    onClose={handleClose}
-                                    transformOrigin={{
-                                        horizontal: 'right',
-                                        vertical: 'top',
-                                    }}
-                                    anchorOrigin={{
-                                        horizontal: 'right',
-                                        vertical: 'bottom',
-                                    }}>
-                                    <MenuItem
-                                        className="space-x-2 duration-300"
-                                        onClick={handleAddTask}>
-                                        <IconCheckupList className="size-5" />
-                                        <span className="text-sm">
-                                            Add Task
-                                        </span>
-                                    </MenuItem>
-                                    <Divider />
-                                    <MenuItem
-                                        className="space-x-2 duration-300"
-                                        onClick={() =>
-                                            setOpenRemoveConfirmation(true)
-                                        }>
-                                        <IconTrash className="size-5" />
-                                        <span className="text-sm">
-                                            Remove Column
-                                        </span>
-                                    </MenuItem>
-                                    <MenuItem
-                                        className="space-x-2 duration-300"
-                                        onClick={() =>
-                                            setOpenRemoveAllTaskConfirmation(
-                                                true,
-                                            )
-                                        }>
-                                        <IconTrashX className="size-5" />
-                                        <span className="text-sm">
-                                            Clear All Tasks
-                                        </span>
-                                    </MenuItem>
-                                </Menu>
+                                <div>
+                                    <IconButton
+                                        className="rounded-lg"
+                                        onClick={handleClick}>
+                                        <IconDots className="size-4.5" />
+                                    </IconButton>
+
+                                    <Menu
+                                        anchorEl={anchorEl}
+                                        open={open}
+                                        onClose={handleClose}
+                                        transformOrigin={{
+                                            horizontal: 'right',
+                                            vertical: 'top',
+                                        }}
+                                        anchorOrigin={{
+                                            horizontal: 'right',
+                                            vertical: 'bottom',
+                                        }}>
+                                        <MenuItem
+                                            className="space-x-2 duration-300"
+                                            onClick={handleAddTask}>
+                                            <IconCheckupList className="size-5" />
+                                            <span className="text-sm">
+                                                Add Task
+                                            </span>
+                                        </MenuItem>
+                                        <Divider />
+                                        <MenuItem
+                                            className="space-x-2 duration-300"
+                                            onClick={() =>
+                                                setOpenRemoveConfirmation(true)
+                                            }>
+                                            <IconTrash className="size-5" />
+                                            <span className="text-sm">
+                                                Remove Column
+                                            </span>
+                                        </MenuItem>
+                                        <MenuItem
+                                            className="space-x-2 duration-300"
+                                            onClick={() =>
+                                                setOpenRemoveAllTaskConfirmation(
+                                                    true,
+                                                )
+                                            }>
+                                            <IconTrashX className="size-5" />
+                                            <span className="text-sm">
+                                                Clear All Tasks
+                                            </span>
+                                        </MenuItem>
+                                    </Menu>
+                                </div>
                             </div>
                         </div>
+
+                        <div className="space-y-2 overflow-y-auto p-2">
+                            <AnimatePresence mode="sync">
+                                <div className="flex flex-col gap-2">
+                                    {column.tasks.map((task, index) => (
+                                        <motion.div
+                                            key={`${column.id}-${task.id}`}
+                                            className="space-y-2"
+                                            initial={{
+                                                opacity: 0,
+                                                height: 0,
+                                            }}
+                                            animate={{
+                                                opacity: 1,
+                                                height: 'auto',
+                                            }}
+                                            exit={{
+                                                opacity: 0,
+                                                height: 0,
+                                            }}>
+                                            <InsertionIndicator
+                                                index={index}
+                                                columnId={column.id}
+                                            />
+
+                                            <motion.div
+                                                className="relative"
+                                                ref={(el: HTMLDivElement) => {
+                                                    taskRefs.current[task.id] =
+                                                        el;
+                                                }}
+                                                layoutId={task.id}
+                                                animate={{
+                                                    scale: 1,
+                                                    x: 0,
+                                                    y: 0,
+                                                    // zIndex: 0,
+                                                    // zIndex causes modal error
+                                                }}
+                                                drag
+                                                dragSnapToOrigin
+                                                whileDrag={{
+                                                    scale: 1.05,
+                                                    zIndex: 50,
+                                                }}
+                                                onDragStart={() =>
+                                                    onDragTaskStart(
+                                                        task,
+                                                        column.id,
+                                                        index,
+                                                    )
+                                                }
+                                                onDrag={onDragTask}
+                                                onDragEnd={onDragTaskEnd}>
+                                                <TaskCard
+                                                    task={task}
+                                                    columnId={column.id}
+                                                />
+                                            </motion.div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+
+                                <InsertionIndicator
+                                    key={`indicator-${column.id}`}
+                                    index={column.tasks.length}
+                                    columnId={column.id}
+                                />
+                            </AnimatePresence>
+                        </div>
+
+                        <div className="p-2 pt-0">
+                            <Button
+                                className="w-full rounded-xl border-2 border-dashed border-gray-300 bg-gray-50/50 px-4 py-6 text-gray-500 normal-case hover:bg-gray-100/50"
+                                startIcon={<IconCheckupList />}
+                                onClick={handleAddTask}>
+                                Add task
+                            </Button>
+                        </div>
                     </div>
-
-                    <div className="flex flex-col gap-2 p-2">
-                        <AnimatePresence mode="sync">
-                            {column.tasks.map((task, index) => (
-                                <motion.div
-                                    key={task.id}
-                                    initial={{
-                                        opacity: 0,
-                                        height: 0,
-                                    }}
-                                    animate={{
-                                        opacity: 1,
-                                        height: 'auto',
-                                    }}
-                                    exit={{ opacity: 0, height: 0 }}>
-                                    <InsertionIndicator
-                                        index={index}
-                                        columnId={column.id}
-                                    />
-
-                                    <motion.div
-                                        className="relative"
-                                        ref={(el) => {
-                                            if (taskRefs.current && el) {
-                                                taskRefs.current[task.id] = el;
-                                            }
-                                        }}
-                                        layoutId={task.id}
-                                        drag
-                                        dragSnapToOrigin
-                                        animate={{
-                                            scale: 1,
-                                            x: 0,
-                                            y: 0,
-                                            // zIndex: 0,
-                                            // zIndex causes modal error
-                                        }}
-                                        whileDrag={{
-                                            scale: 1.05,
-                                            zIndex: 50,
-                                        }}
-                                        onDragStart={() =>
-                                            onDragTaskStart(
-                                                task,
-                                                column.id,
-                                                index,
-                                            )
-                                        }
-                                        onDrag={onDragTask}
-                                        onDragEnd={onDragTaskEnd}>
-                                        <TaskCard
-                                            task={task}
-                                            columnId={column.id}
-                                        />
-                                    </motion.div>
-                                </motion.div>
-                            ))}
-
-                            <InsertionIndicator
-                                index={column.tasks.length}
-                                columnId={column.id}
-                            />
-                        </AnimatePresence>
-
-                        <Button
-                            className="w-full rounded-xl border-2 border-dashed border-gray-300 bg-gray-50/50 px-4 py-6 text-gray-500 normal-case hover:bg-gray-100/50"
-                            startIcon={<IconCheckupList />}
-                            onClick={handleAddTask}>
-                            Add task
-                        </Button>
-                    </div>
-                </div>
-            )}
-        </motion.div>
+                )}
+            </motion.div>
+        </>
     );
 });
 
