@@ -199,6 +199,12 @@ const BoardTable: React.FC<{
         onAddColumn(newColumn);
     };
 
+    const getCardMotionProps = () => ({
+        initial: { opacity: 0, width: 0, filter: 'blur(4px)' },
+        animate: { opacity: 1, width: 'auto', filter: 'blur(0px)' },
+        exit: { opacity: 0, width: 0, filter: 'blur(4px)' },
+    });
+
     return (
         <BoardContext.Provider
             value={{
@@ -222,17 +228,24 @@ const BoardTable: React.FC<{
                             onReorder={onReorderColumn}>
                             <AnimatePresence mode="sync">
                                 {loading
-                                    ? Array.from({ length: 4 }).map(
+                                    ? Array.from({ length: 6 }).map(
                                           (_, index) => (
-                                              <ColumnSkeleton
+                                              <motion.div
+                                                  layout
                                                   key={index}
-                                                  id={index}
-                                              />
+                                                  {...getCardMotionProps()}>
+                                                  <ColumnSkeleton
+                                                      key={index}
+                                                      id={index}
+                                                  />
+                                              </motion.div>
                                           ),
                                       )
                                     : columns.map((column) => (
-                                          <div
+                                          <motion.div
                                               key={column.id}
+                                              layout
+                                              {...getCardMotionProps()}
                                               className="flex h-full">
                                               <Reorder.Item
                                                   layout
@@ -245,25 +258,10 @@ const BoardTable: React.FC<{
                                                   className="grow"
                                                   value={column}
                                                   key={column.id} // Prefer stable ID
-                                                  initial={{
-                                                      opacity: 0,
-                                                      width: 0,
-                                                      height: 0,
-                                                  }}
-                                                  animate={{
-                                                      opacity: 1,
-                                                      width: 'auto',
-                                                      height: 'auto',
-                                                  }}
-                                                  exit={{
-                                                      opacity: 0,
-                                                      width: 0,
-                                                      height: 0,
-                                                  }}
                                                   drag>
                                                   <ColumnCard column={column} />
                                               </Reorder.Item>
-                                          </div>
+                                          </motion.div>
                                       ))}
                             </AnimatePresence>
 

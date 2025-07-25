@@ -227,12 +227,12 @@ const ColumnCard: React.FC<{
                             </div>
                         </div>
 
-                        <div className="overflow-y-auto p-2">
-                            <AnimatePresence mode="sync">
-                                <div className="relative flex flex-col gap-2">
+                        <div className="overflow-x-hidden overflow-y-auto p-2">
+                            <div className="relative flex flex-col gap-2">
+                                <AnimatePresence mode="sync">
                                     {column.tasks.map((task, index) => (
                                         <motion.div
-                                            key={`${column.id}-${task.id}`}
+                                            key={`${task.id}`}
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{
                                                 opacity: 1,
@@ -274,8 +274,8 @@ const ColumnCard: React.FC<{
                                         index={column.tasks.length}
                                         columnId={column.id}
                                     />
-                                </div>
-                            </AnimatePresence>
+                                </AnimatePresence>
+                            </div>
                         </div>
 
                         <div className="p-2 pt-0">

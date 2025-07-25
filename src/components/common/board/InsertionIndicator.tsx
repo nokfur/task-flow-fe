@@ -1,6 +1,6 @@
 import { useBoardContextProvider } from '@/components/common/board/BoardTable';
 import type { Column } from '@/interfaces/interfaces';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface IndicatorProps {
     index: number;
@@ -34,14 +34,18 @@ const InsertionIndicator: React.FC<IndicatorProps> = ({ index, columnId }) => {
             taskDragState.originalIndex !== index);
 
     return (
-        shouldShow && (
-            <motion.div
-                className="h-26 w-full rounded-xl border-2 border-dashed border-violet-300 bg-violet-100"
-                data-index={index}
-                data-column={columnId}
-                transition={{ duration: 0.15 }}
-            />
-        )
+        <AnimatePresence mode="wait">
+            {shouldShow && (
+                <motion.div
+                    key={`indicator-${columnId}-${index}`}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.15 }}>
+                    <div className="h-26 w-full rounded-xl border-2 border-dashed border-violet-300 bg-violet-100" />
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 };
 
