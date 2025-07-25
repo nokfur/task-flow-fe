@@ -1,4 +1,5 @@
 import { useBoardContextProvider } from '@/components/common/board/BoardTable';
+import InsertionIndicator from '@/components/common/board/InsertionIndicator';
 import TaskCard from '@/components/common/board/TaskCard';
 import ConfirmationDialog from '@/components/common/ConfirmationDialog';
 import EditableText from '@/components/common/input/EditableText';
@@ -18,7 +19,7 @@ import {
     IconTrashX,
 } from '@tabler/icons-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 const ColumnCard: React.FC<{
     column: Column;
@@ -28,13 +29,13 @@ const ColumnCard: React.FC<{
         onRemoveColumn,
         onAddTask,
         onRemoveAllTasks,
-
         taskDragState,
-        taskRefs,
         onDragTask,
         onDragTaskEnd,
         onDragTaskStart,
     } = useBoardContextProvider();
+
+    const taskRefs = useRef<Record<string, HTMLDivElement>>({});
 
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [openRemoveConfirmation, setOpenRemoveConfirmation] = useState(false);
@@ -79,37 +80,39 @@ const ColumnCard: React.FC<{
         onRemoveAllTasks(column.id);
     };
 
-    const InsertionIndicator = ({
-        index,
-        columnId,
-    }: {
-        index: number;
-        columnId: string;
-    }) => {
-        if (
-            taskDragState.fromColumn === columnId &&
-            index > (taskDragState.originalIndex || 0)
-        )
-            index--;
+    const handleDragOver = (event: React.DragEvent<HTMLElement>) => {
+        event.preventDefault();
 
-        // show at index if task is over this column, and index is not original index if moving in original column
-        const shouldShow =
-            taskDragState.overColumn === columnId &&
-            taskDragState.insertionIndex === index &&
-            (taskDragState.fromColumn !== columnId ||
-                taskDragState.originalIndex !== index);
-
-        return (
-            <AnimatePresence mode="wait">
-                {shouldShow && (
-                    <motion.div
-                        layoutId={`task-indicator`}
-                        transition={{ duration: 0.15 }}>
-                        <div className="relative z-40 h-26 w-full rounded-xl border-2 border-dashed border-blue-300 bg-blue-100"></div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+        const visibleTasks = column.tasks.filter(
+            (t) => t.id !== taskDragState.draggedItem?.id,
         );
+
+        let insertIndex = visibleTasks.length; // Default to end
+
+        visibleTasks.forEach((task, index) => {
+            const taskElement = taskRefs.current[task.id];
+            if (taskElement) {
+                const taskRect = taskElement.getBoundingClientRect();
+                const taskMiddle =
+                    window.scrollY + taskRect.top + taskRect.height / 2;
+
+                // Get smallest index where current pointer is less than task position
+                if (event.clientY < taskMiddle && index < insertIndex) {
+                    insertIndex = index;
+                }
+            }
+        });
+
+        onDragTask(column.id, insertIndex);
+    };
+
+    const handleDrop = () => {
+        onDragTaskEnd();
+    };
+
+    const handleDragLeave = (event: React.DragEvent<HTMLElement>) => {
+        event.preventDefault();
+        // onDragTaskLeave();
     };
 
     return (
@@ -132,7 +135,10 @@ const ColumnCard: React.FC<{
 
             <motion.div
                 animate={{ width: isCollapsed ? 56 : 'auto' }}
-                className="h-full">
+                className="h-full"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onDragLeave={handleDragLeave}>
                 {isCollapsed ? (
                     <div
                         className="flex cursor-pointer items-center gap-2 overflow-hidden rounded-xl border border-gray-200 bg-white py-2 pb-4"
@@ -221,59 +227,41 @@ const ColumnCard: React.FC<{
                             </div>
                         </div>
 
-                        <div className="space-y-2 overflow-y-auto p-2">
+                        <div className="overflow-y-auto p-2">
                             <AnimatePresence mode="sync">
-                                <div className="flex flex-col gap-2">
+                                <div className="relative flex flex-col gap-2">
                                     {column.tasks.map((task, index) => (
                                         <motion.div
                                             key={`${column.id}-${task.id}`}
-                                            className="space-y-2"
-                                            initial={{
-                                                opacity: 0,
-                                                height: 0,
-                                            }}
+                                            initial={{ opacity: 0, height: 0 }}
                                             animate={{
                                                 opacity: 1,
                                                 height: 'auto',
                                             }}
-                                            exit={{
-                                                opacity: 0,
-                                                height: 0,
-                                            }}>
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="relative flex flex-col gap-2">
                                             <InsertionIndicator
                                                 index={index}
                                                 columnId={column.id}
                                             />
 
                                             <motion.div
-                                                className="relative"
+                                                layoutId={task.id}
                                                 ref={(el: HTMLDivElement) => {
                                                     taskRefs.current[task.id] =
                                                         el;
                                                 }}
-                                                layoutId={task.id}
-                                                animate={{
-                                                    scale: 1,
-                                                    x: 0,
-                                                    y: 0,
-                                                    // zIndex: 0,
-                                                    // zIndex causes modal error
-                                                }}
-                                                drag
-                                                dragSnapToOrigin
-                                                whileDrag={{
-                                                    scale: 1.05,
-                                                    zIndex: 50,
-                                                }}
+                                                draggable
+                                                onPointerDownCapture={(
+                                                    e: React.PointerEvent,
+                                                ) => e.stopPropagation()}
                                                 onDragStart={() =>
                                                     onDragTaskStart(
                                                         task,
                                                         column.id,
                                                         index,
                                                     )
-                                                }
-                                                onDrag={onDragTask}
-                                                onDragEnd={onDragTaskEnd}>
+                                                }>
                                                 <TaskCard
                                                     task={task}
                                                     columnId={column.id}
@@ -281,13 +269,12 @@ const ColumnCard: React.FC<{
                                             </motion.div>
                                         </motion.div>
                                     ))}
-                                </div>
 
-                                <InsertionIndicator
-                                    key={`indicator-${column.id}`}
-                                    index={column.tasks.length}
-                                    columnId={column.id}
-                                />
+                                    <InsertionIndicator
+                                        index={column.tasks.length}
+                                        columnId={column.id}
+                                    />
+                                </div>
                             </AnimatePresence>
                         </div>
 

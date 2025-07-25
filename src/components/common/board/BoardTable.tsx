@@ -3,13 +3,7 @@ import type { Column, Label, Task } from '@/interfaces/interfaces';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import { IconColumnInsertLeft } from '@tabler/icons-react';
-import {
-    AnimatePresence,
-    motion,
-    Reorder,
-    type PanInfo,
-    type Point,
-} from 'framer-motion';
+import { AnimatePresence, motion, Reorder } from 'framer-motion';
 import React, { createContext, useContext, useRef, useState } from 'react';
 
 const ColumnSkeleton: React.FC<{ id: React.Key }> = ({ id }) => (
@@ -24,7 +18,6 @@ const ColumnSkeleton: React.FC<{ id: React.Key }> = ({ id }) => (
             opacity: 1,
             width: 'auto',
             height: 'auto',
-            scale: 1,
         }}
         exit={{
             opacity: 0,
@@ -76,10 +69,7 @@ interface TaskDragState {
 interface BoardContextType {
     onDragTaskStart: (item: Task, fromColumnId: string, index: number) => void;
     onDragTaskEnd: () => void;
-    onDragTask: (
-        _: MouseEvent | TouchEvent | PointerEvent,
-        info: PanInfo,
-    ) => void;
+    onDragTask: (overColumnId: string, insertIndex: number) => void;
 
     onUpdateColumn: (updatedColumn: Column) => void;
     onRemoveColumn: (columnId: string) => void;
@@ -149,10 +139,10 @@ const BoardTable: React.FC<{
     const columnRefs = useRef<Record<string, HTMLDivElement>>({});
     const taskRefs = useRef<Record<string, HTMLDivElement>>({});
 
-    const handleDragTaskStart = (
-        item: Task,
-        fromColumnId: string,
-        index: number,
+    const handleDragTaskStart: BoardContextType['onDragTaskStart'] = (
+        item,
+        fromColumnId,
+        index,
     ) => {
         setTaskDragState({
             draggedItem: item,
@@ -163,24 +153,18 @@ const BoardTable: React.FC<{
         });
     };
 
-    const handleDragTask = (
-        _: MouseEvent | TouchEvent | PointerEvent,
-        info: PanInfo,
+    const handleDragTask: BoardContextType['onDragTask'] = (
+        overColumnId,
+        insertIndex,
     ) => {
-        if (!taskDragState.draggedItem) return;
-
-        // Get the drop target column
-        const dropInfo = getDropTargetInfo(info.point);
-
         setTaskDragState((prev) => ({
             ...prev,
-            overColumn: dropInfo.columnId,
-            insertionIndex: dropInfo.insertIndex,
-            mousePosition: { x: info.point.x, y: info.point.y },
+            overColumn: overColumnId,
+            insertionIndex: insertIndex,
         }));
     };
 
-    const handleDragTaskEnd = () => {
+    const handleDragTaskEnd: BoardContextType['onDragTaskEnd'] = () => {
         if (
             !taskDragState.draggedItem ||
             !taskDragState.fromColumn ||
@@ -204,52 +188,6 @@ const BoardTable: React.FC<{
             insertionIndex: null,
             originalIndex: null,
         });
-    };
-
-    const getDropTargetInfo = (
-        point: Point,
-    ): { columnId: string | null; insertIndex: number } => {
-        for (const [columnId, columnRef] of Object.entries(
-            columnRefs.current,
-        )) {
-            if (!columnRef) continue;
-
-            const columnRect = columnRef.getBoundingClientRect();
-            const buffer = 0;
-
-            if (
-                point.x >= columnRect.left - buffer &&
-                point.x <= columnRect.right + buffer
-            ) {
-                // Find the insertion index within this column
-                const column = columns.find((c) => c.id === columnId);
-                if (!column) return { columnId, insertIndex: 0 };
-
-                const visibleTasks = column.tasks.filter(
-                    (t) => t.id !== taskDragState.draggedItem?.id,
-                );
-
-                let insertIndex = visibleTasks.length; // Default to end
-
-                // Check each task's position to find insertion point
-                visibleTasks.forEach((task, index) => {
-                    const taskElement = taskRefs.current[task.id];
-                    if (taskElement) {
-                        const taskRect = taskElement.getBoundingClientRect();
-                        const taskMiddle =
-                            window.scrollY + taskRect.top + taskRect.height / 2;
-
-                        // Get smallest index where current pointer is less than task position
-                        if (point.y < taskMiddle && index < insertIndex) {
-                            insertIndex = index;
-                        }
-                    }
-                });
-
-                return { columnId, insertIndex };
-            }
-        }
-        return { columnId: null, insertIndex: 0 };
     };
 
     const handleAddColumn = () => {
@@ -297,6 +235,7 @@ const BoardTable: React.FC<{
                                               key={column.id}
                                               className="flex h-full">
                                               <Reorder.Item
+                                                  layout
                                                   ref={(el) => {
                                                       columnRefs.current[
                                                           column.id
@@ -315,17 +254,13 @@ const BoardTable: React.FC<{
                                                       opacity: 1,
                                                       width: 'auto',
                                                       height: 'auto',
-                                                      scale: 1,
                                                   }}
                                                   exit={{
                                                       opacity: 0,
                                                       width: 0,
                                                       height: 0,
                                                   }}
-                                                  drag
-                                                  whileDrag={{
-                                                      scale: 1.05,
-                                                  }}>
+                                                  drag>
                                                   <ColumnCard column={column} />
                                               </Reorder.Item>
                                           </div>

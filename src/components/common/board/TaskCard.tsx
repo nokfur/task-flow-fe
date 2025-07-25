@@ -193,7 +193,6 @@ const TaskCard: React.FC<{
                                     opacity: 1,
                                     width: 'auto',
                                     height: 'auto',
-                                    scale: 1,
                                 }}
                                 exit={{
                                     opacity: 0,
