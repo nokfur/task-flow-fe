@@ -155,11 +155,11 @@ const ColumnCard: React.FC<{
                     </div>
                 ) : (
                     <div className="flex max-h-full w-xs cursor-pointer flex-col rounded-xl border border-gray-200 bg-white">
-                        <div className="flex items-center justify-between rounded-t-xl bg-slate-100 px-4 py-2">
+                        <div className="flex items-center justify-between rounded-t-xl bg-slate-100 px-2 py-2">
                             <EditableText
                                 value={column.title}
                                 placeholder="Column title (e.g, To Do, In Progress, Done)"
-                                className="font-semibold"
+                                className="px-3! py-1! text-base! font-semibold"
                                 onSave={handleUpdateColumnTitle}
                             />
 

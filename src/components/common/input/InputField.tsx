@@ -63,7 +63,7 @@ const InputField: React.FC<InputProps> = ({
         onBlur,
         onKeyUp: onKeyPress,
         onFocus,
-        className: `w-full rounded-lg border-2 px-3 py-2 text-sm text-gray-950 transition-all duration-300 ease-linear outline-none focus:border-purple-400 focus:shadow-md ${error ? 'border-red-400' : 'border-gray-100'} ${disabled ? 'bg-gray-200' : 'bg-white'} ${startIcon && 'pl-10'} ${className}`,
+        className: `${className} w-full rounded-lg border-2 px-3 py-2 text-sm text-gray-950 transition-all duration-300 ease-linear outline-none focus:border-purple-400 focus:shadow-md ${error ? 'border-red-400' : 'border-gray-100'} ${disabled ? 'bg-gray-200' : 'bg-white'} ${startIcon && 'pl-10'} `,
         disabled,
         autoFocus,
         // required: isRequired,

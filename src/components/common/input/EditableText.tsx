@@ -68,7 +68,7 @@ const EditableText: React.FC<Props> = (props) => {
                     />
                 ) : (
                     <p
-                        className={`cursor-pointer break-words ${className}`}
+                        className={`${className} cursor-pointer break-words`}
                         onClick={() => setIsEditing(true)}>
                         {value}
                     </p>
