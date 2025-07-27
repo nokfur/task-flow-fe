@@ -4,11 +4,18 @@ import ConfirmationDialog from '@/components/common/ConfirmationDialog';
 import EditableText from '@/components/common/input/EditableText';
 import { TaskPriorityColor, type TaskPriority } from '@/constants/constants';
 import type { Label, Task } from '@/interfaces/interfaces';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { IconDots, IconTag, IconTrash } from '@tabler/icons-react';
+import Tooltip from '@mui/material/Tooltip';
+import {
+    IconClockHour5,
+    IconDots,
+    IconTag,
+    IconTrash,
+} from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useState } from 'react';
@@ -49,7 +56,7 @@ const TaskCard: React.FC<{
     };
 
     const handleUpdateTask = (
-        type: 'title' | 'description' | 'priority',
+        type: 'title' | 'description' | 'priority' | 'dueDate',
         value: string | TaskPriority,
     ) => {
         const columnIndex = columns.findIndex((c) => c.id === columnId);
@@ -137,12 +144,26 @@ const TaskCard: React.FC<{
                                     setOpenLabelManagementModal(true);
                                     handleClose();
                                 }}>
+                                <IconClockHour5 className="size-5" />
+                                <span className="text-sm">Pick Due Date</span>
+                            </MenuItem>
+
+                            <MenuItem
+                                className="space-x-2 duration-300"
+                                onClick={() => {
+                                    setOpenLabelManagementModal(true);
+                                    handleClose();
+                                }}>
                                 <IconTag className="size-5" />
                                 <span className="text-sm">Manage Labels</span>
                             </MenuItem>
+                            <Divider />
                             <MenuItem
                                 className="space-x-2 duration-300"
-                                onClick={() => setOpenRemoveConfirmation(true)}>
+                                onClick={() => {
+                                    setOpenRemoveConfirmation(true);
+                                    handleClose();
+                                }}>
                                 <IconTrash className="size-5" />
                                 <span className="text-sm">Remove Task</span>
                             </MenuItem>
@@ -173,10 +194,24 @@ const TaskCard: React.FC<{
                         <MenuItem value="Low">Low</MenuItem>
                     </Select>
 
-                    <p className="text-xs">
-                        <span className="font-medium">Due: </span>
-                        {task.dueDate && dayjs(task.dueDate).fromNow()}
-                    </p>
+                    {task.dueDate &&
+                        (() => {
+                            const isOverdue = dayjs(task.dueDate).isBefore(
+                                dayjs(),
+                            );
+                            return (
+                                <Tooltip
+                                    title={isOverdue ? 'Overdue' : 'Due later'}>
+                                    <div
+                                        className={`flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${isOverdue ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                        <IconClockHour5 className="size-5" />
+                                        <span>
+                                            {dayjs(task.dueDate).fromNow()}
+                                        </span>
+                                    </div>
+                                </Tooltip>
+                            );
+                        })()}
                 </div>
 
                 <div className="flex flex-wrap items-start gap-2">
