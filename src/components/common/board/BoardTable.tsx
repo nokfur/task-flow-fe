@@ -242,26 +242,20 @@ const BoardTable: React.FC<{
                                           ),
                                       )
                                     : columns.map((column) => (
-                                          <motion.div
-                                              key={column.id}
-                                              layout
-                                              {...getCardMotionProps()}
-                                              className="flex h-full">
-                                              <Reorder.Item
-                                                  layout
-                                                  ref={(el) => {
-                                                      columnRefs.current[
-                                                          column.id
-                                                      ] = el;
-                                                  }}
-                                                  as="div"
-                                                  className="grow"
-                                                  value={column}
-                                                  key={column.id} // Prefer stable ID
-                                                  drag>
-                                                  <ColumnCard column={column} />
-                                              </Reorder.Item>
-                                          </motion.div>
+                                          <Reorder.Item
+                                              ref={(el) => {
+                                                  columnRefs.current[
+                                                      column.id
+                                                  ] = el;
+                                              }}
+                                              as="div"
+                                              className="flex h-full"
+                                              value={column}
+                                              key={column.id} // Prefer stable ID
+                                              drag
+                                              {...getCardMotionProps()}>
+                                              <ColumnCard column={column} />
+                                          </Reorder.Item>
                                       ))}
                             </AnimatePresence>
 

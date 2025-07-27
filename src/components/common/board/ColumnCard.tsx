@@ -135,7 +135,7 @@ const ColumnCard: React.FC<{
 
             <motion.div
                 animate={{ width: isCollapsed ? 56 : 'auto' }}
-                className="h-full"
+                className="grow"
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onDragLeave={handleDragLeave}>
@@ -228,7 +228,7 @@ const ColumnCard: React.FC<{
                         </div>
 
                         <div className="overflow-x-hidden overflow-y-auto p-2">
-                            <div className="relative flex flex-col gap-2">
+                            <div className="flex flex-col gap-2">
                                 <AnimatePresence mode="sync">
                                     {column.tasks.map((task, index) => (
                                         <motion.div
@@ -239,7 +239,7 @@ const ColumnCard: React.FC<{
                                                 height: 'auto',
                                             }}
                                             exit={{ opacity: 0, height: 0 }}
-                                            className="relative flex flex-col gap-2">
+                                            className="flex flex-col gap-2">
                                             <InsertionIndicator
                                                 index={index}
                                                 columnId={column.id}
