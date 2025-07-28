@@ -33,7 +33,7 @@ createRoot(document.getElementById('root')!).render(
                     <AnimatePresence mode="wait">
                         <Suspense
                             fallback={
-                                <div className="flex h-screen items-center justify-center text-purple-500">
+                                <div className="flex h-screen items-center justify-center text-violet-500">
                                     <SpinningCircle size={7} loading />
                                 </div>
                             }>

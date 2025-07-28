@@ -1,4 +1,5 @@
-import BoardLabelManagementModal from '@/components/admin/BoardLabelManagementModal';
+import BoardLabelManagementModal from '@/components/common/board/modal/BoardLabelManagementModal';
+import TaskDatePickerModal from '@/components/common/board/modal/TaskDatePickerModal';
 import { useBoardContextProvider } from '@/components/common/board/BoardTable';
 import ConfirmationDialog from '@/components/common/ConfirmationDialog';
 import EditableText from '@/components/common/input/EditableText';
@@ -16,16 +17,18 @@ import {
     IconTag,
     IconTrash,
 } from '@tabler/icons-react';
-import dayjs from 'dayjs';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useState } from 'react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 const TaskCard: React.FC<{
     task: Task;
     columnId?: string;
 }> = React.memo(({ task, columnId = '' }) => {
     const {
-        columns,
         labels,
         onUpdateTask,
         onRemoveTask,
@@ -38,6 +41,7 @@ const TaskCard: React.FC<{
     const [openLabelManagementModal, setOpenLabelManagementModal] =
         useState(false);
     const [openRemoveConfirmation, setOpenRemoveConfirmation] = useState(false);
+    const [openDueDatePicker, setOpenDueDatePicker] = useState(false);
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -57,16 +61,9 @@ const TaskCard: React.FC<{
 
     const handleUpdateTask = (
         type: 'title' | 'description' | 'priority' | 'dueDate',
-        value: string | TaskPriority,
+        value: string | TaskPriority | Date | null,
     ) => {
-        const columnIndex = columns.findIndex((c) => c.id === columnId);
-
-        let updatedTask: Task | undefined = columns[columnIndex]?.tasks.find(
-            (t) => t.id === task.id,
-        );
-        if (!updatedTask) return;
-
-        updatedTask = { ...updatedTask, [type]: value };
+        const updatedTask = { ...task, [type]: value };
 
         onUpdateTask(updatedTask, columnId);
     };
@@ -108,6 +105,15 @@ const TaskCard: React.FC<{
                 description="This will remove this task from the column. There is no undo."
             />
 
+            <TaskDatePickerModal
+                open={openDueDatePicker}
+                onClose={() => setOpenDueDatePicker(false)}
+                onConfirm={(date) => {
+                    handleUpdateTask('dueDate', date);
+                }}
+                currentDate={task.dueDate}
+            />
+
             <div className="cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-3">
                 <div className="flex max-w-full items-center justify-between">
                     <EditableText
@@ -141,8 +147,7 @@ const TaskCard: React.FC<{
                             <MenuItem
                                 className="space-x-2 duration-300"
                                 onClick={() => {
-                                    setOpenLabelManagementModal(true);
-                                    handleClose();
+                                    setOpenDueDatePicker(true);
                                 }}>
                                 <IconClockHour5 className="size-5" />
                                 <span className="text-sm">Pick Due Date</span>
@@ -152,7 +157,6 @@ const TaskCard: React.FC<{
                                 className="space-x-2 duration-300"
                                 onClick={() => {
                                     setOpenLabelManagementModal(true);
-                                    handleClose();
                                 }}>
                                 <IconTag className="size-5" />
                                 <span className="text-sm">Manage Labels</span>
@@ -199,14 +203,21 @@ const TaskCard: React.FC<{
                             const isOverdue = dayjs(task.dueDate).isBefore(
                                 dayjs(),
                             );
+                            const fromNow = dayjs(task.dueDate).fromNow();
                             return (
                                 <Tooltip
-                                    title={isOverdue ? 'Overdue' : 'Due later'}>
+                                    title={
+                                        isOverdue
+                                            ? `Overdue ${fromNow}`
+                                            : `Due ${fromNow}`
+                                    }>
                                     <div
                                         className={`flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${isOverdue ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
                                         <IconClockHour5 className="size-5" />
                                         <span>
-                                            {dayjs(task.dueDate).fromNow()}
+                                            {dayjs(task.dueDate).format(
+                                                'MMM D, YYYY',
+                                            )}
                                         </span>
                                     </div>
                                 </Tooltip>

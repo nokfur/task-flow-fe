@@ -19,7 +19,7 @@ const ConfirmationDialog: React.FC<{
 
     const handleConfirm = () => {
         onConfirm();
-        onClose();
+        handleClose();
     };
 
     if (!open) return null;

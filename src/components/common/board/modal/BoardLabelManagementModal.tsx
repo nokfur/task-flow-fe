@@ -203,7 +203,7 @@ const BoardLabelManagementModal: React.FC<{
 
     return createPortal(
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
+            className="fixed inset-0 z-2000 flex items-center justify-center"
             onPointerDownCapture={(e: React.PointerEvent) =>
                 e.stopPropagation()
             }>

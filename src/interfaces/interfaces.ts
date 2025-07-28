@@ -66,6 +66,6 @@ export interface Task {
     description: string;
     position?: number;
     priority: TaskPriority;
-    dueDate?: string;
+    dueDate?: Date;
     labels: Label[];
 }
