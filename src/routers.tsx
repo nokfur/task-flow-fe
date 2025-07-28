@@ -8,8 +8,8 @@ const UserBoardUpdatePage = lazy(
 const TemplateBoardManagementPage = lazy(
     () => import('@/pages/admin/template-boards/TemplateBoardManagementPage'),
 );
-const PageWrapper = lazy(() => import('@/components/common/PageWrapper'));
-const ProtectedRoute = lazy(() => import('@/components/common/ProtectedRoute'));
+const PageWrapper = lazy(() => import('@/components/layout/PageWrapper'));
+const ProtectedRoute = lazy(() => import('@/components/layout/ProtectedRoute'));
 const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'));
 const AuthPage = lazy(() => import('@/pages/AuthPage'));
 const UserBoardCreatePage = lazy(
