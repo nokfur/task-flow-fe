@@ -40,14 +40,14 @@ export interface TaskAddRequest {
     title: string;
     description?: string;
     priority: TaskPriority;
-    dueDate?: string;
+    dueDate: Date | null;
 }
 
 export interface TaskUpdateRequest {
     title: string;
     description?: string;
     priority: TaskPriority;
-    dueDate?: string;
+    dueDate: Date | null;
 }
 
 export interface TaskReorderUpdateRequest {
