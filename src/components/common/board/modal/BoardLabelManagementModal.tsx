@@ -202,11 +202,7 @@ const BoardLabelManagementModal: React.FC<{
     if (!open) return null;
 
     return createPortal(
-        <div
-            className="fixed inset-0 z-2000 flex items-center justify-center"
-            onPointerDownCapture={(e: React.PointerEvent) =>
-                e.stopPropagation()
-            }>
+        <div className="fixed inset-0 z-1300 flex items-center justify-center">
             <div
                 className={`absolute inset-0 bg-black/50 duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
                 onClick={handleClose}
@@ -258,6 +254,7 @@ const BoardLabelManagementModal: React.FC<{
 
                     <div className="flex items-center gap-2">
                         <InputField
+                            name="labelName"
                             placeholder="Enter label name..."
                             className="text-sm"
                             value={label.name}
@@ -270,7 +267,7 @@ const BoardLabelManagementModal: React.FC<{
                         />
 
                         <input
-                            className="h-10 w-26"
+                            className="h-10 w-26 cursor-pointer"
                             type="color"
                             value={label.color}
                             onChange={(e) =>
@@ -281,7 +278,7 @@ const BoardLabelManagementModal: React.FC<{
                             }
                         />
 
-                        <Tooltip title="Add a new label">
+                        <Tooltip title="Add a new label" className="z-1400">
                             <span>
                                 <IconButton
                                     className="rounded-lg bg-blue-600 text-gray-50 normal-case hover:bg-blue-700 disabled:pointer-events-none disabled:bg-gray-300"

@@ -133,6 +133,7 @@ const TaskCard: React.FC<{
                         </IconButton>
 
                         <Menu
+                            disableEnforceFocus
                             anchorEl={anchorEl}
                             open={open}
                             onClose={handleClose}

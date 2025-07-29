@@ -11,7 +11,7 @@ const TaskDatePickerModal: React.FC<{
     open?: boolean;
     onClose?: () => void;
     onConfirm?: (date: Date | null) => void;
-    currentDate?: Date;
+    currentDate?: Date | null;
 }> = ({
     open = false,
     onClose = () => {},
