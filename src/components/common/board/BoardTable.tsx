@@ -157,6 +157,8 @@ const BoardTable: React.FC<{
         overColumnId,
         insertIndex,
     ) => {
+        if (taskDragState.draggedItem === null) return;
+
         setTaskDragState((prev) => ({
             ...prev,
             overColumn: overColumnId,
@@ -166,19 +168,17 @@ const BoardTable: React.FC<{
 
     const handleDragTaskEnd: BoardContextType['onDragTaskEnd'] = () => {
         if (
-            !taskDragState.draggedItem ||
-            !taskDragState.fromColumn ||
-            !taskDragState.overColumn ||
-            taskDragState.insertionIndex === null
+            taskDragState.draggedItem &&
+            taskDragState.fromColumn &&
+            taskDragState.overColumn &&
+            taskDragState.insertionIndex !== null
         )
-            return;
-
-        onReorderTask(
-            taskDragState.draggedItem,
-            taskDragState.fromColumn,
-            taskDragState.overColumn,
-            taskDragState.insertionIndex,
-        );
+            onReorderTask(
+                taskDragState.draggedItem,
+                taskDragState.fromColumn,
+                taskDragState.overColumn,
+                taskDragState.insertionIndex,
+            );
 
         // Reset drag state
         setTaskDragState({

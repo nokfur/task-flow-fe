@@ -1,5 +1,5 @@
+import BoardHeading from '@/components/common/board/board-heading/BoardHeading';
 import { BoardTable } from '@/components/common/board/BoardTable';
-import EditableText from '@/components/common/input/EditableText';
 import useBoardUpdaters from '@/hooks/board-updaters';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
 import type { Board, Column, Label, Task } from '@/interfaces/interfaces';
@@ -7,11 +7,6 @@ import type {
     ColumnPositionUpdateRequest,
     TaskReorderUpdateRequest,
 } from '@/interfaces/requestInterfaces';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Skeleton from '@mui/material/Skeleton';
-import Tooltip from '@mui/material/Tooltip';
-import { IconFilter, IconInfoCircle, IconUserPlus } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -162,48 +157,11 @@ const UserBoardUpdatePage = () => {
 
     return (
         <div className="flex grow flex-col bg-slate-50">
-            <div className="w-full bg-white/50 backdrop-blur-sm">
-                <div className="border-b border-gray-200 px-8 py-2">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            {loading ? (
-                                <Skeleton className="h-10 w-36" />
-                            ) : (
-                                <div className="w-fit rounded-md duration-200 hover:bg-gray-200">
-                                    <EditableText
-                                        placeholder="Board title (e.g, Website Redesign Project)"
-                                        value={board.title}
-                                        onSave={(val) =>
-                                            handleUpdateBoard(val, 'title')
-                                        }
-                                        className="px-3! py-1! text-lg! font-medium"
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                            <Tooltip title="Filter tasks">
-                                <IconButton className="rounded-md hover:bg-gray-200">
-                                    <IconFilter className="size-5" />
-                                </IconButton>
-                            </Tooltip>
-
-                            <Tooltip title="About this board">
-                                <IconButton className="rounded-md hover:bg-gray-200">
-                                    <IconInfoCircle className="size-5" />
-                                </IconButton>
-                            </Tooltip>
-
-                            <Button
-                                className="bg-violet-600 px-4 py-1 font-medium text-gray-50 normal-case transition duration-200 hover:bg-violet-700 hover:shadow-md"
-                                startIcon={<IconUserPlus className="size-5" />}>
-                                Share
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <BoardHeading
+                board={board}
+                loading={loading}
+                onUpdateBoard={handleUpdateBoard}
+            />
 
             <BoardTable
                 loading={loading}
