@@ -1,10 +1,13 @@
 import ColumnCard from '@/components/common/board/ColumnCard';
+import type { DueDateFilter, FilterKey } from '@/constants/constants';
 import type { Column, Label, Task } from '@/interfaces/interfaces';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import { IconColumnInsertLeft } from '@tabler/icons-react';
+import dayjs from 'dayjs';
 import { AnimatePresence, motion, Reorder } from 'framer-motion';
-import React, { createContext, useContext, useRef, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 const ColumnSkeleton: React.FC<{ id: React.Key }> = ({ id }) => (
     <motion.div
@@ -88,7 +91,6 @@ interface BoardContextType {
     labels: Label[];
 
     taskDragState: TaskDragState;
-    taskRefs: React.RefObject<Record<string, HTMLDivElement>>;
 }
 
 const BoardContext = createContext<BoardContextType | null>(null);
@@ -136,8 +138,62 @@ const BoardTable: React.FC<{
         originalIndex: null,
     });
 
-    const columnRefs = useRef<Record<string, HTMLDivElement>>({});
-    const taskRefs = useRef<Record<string, HTMLDivElement>>({});
+    const [searchParams] = useSearchParams();
+
+    const filteredColumns = useMemo(() => {
+        const filter: Record<
+            FilterKey,
+            (task: Task, value: string) => boolean
+        > = {
+            due: (task: Task, value: string) => {
+                const today = dayjs();
+                const taskDueDate = dayjs(task.dueDate);
+
+                switch (value as DueDateFilter) {
+                    case 'noDue':
+                        return !task.dueDate;
+                    case 'overdue':
+                        return taskDueDate.isBefore(today, 'day');
+                    case 'nextDay':
+                        return (
+                            taskDueDate.isAfter(today, 'day') &&
+                            taskDueDate.isBefore(today.add(1, 'day'), 'day')
+                        );
+                    case 'nextWeek':
+                        return (
+                            taskDueDate.isAfter(today, 'day') &&
+                            taskDueDate.isBefore(today.add(7, 'day'), 'day')
+                        );
+                    default:
+                        return false;
+                }
+            },
+            label: (task: Task, name?: string) => {
+                if (name === 'none') {
+                    return task.labels.length === 0;
+                }
+                return task.labels.some((label) => label.name === name);
+            },
+        };
+
+        let filteredColumns = columns;
+
+        (['due', 'label'] as FilterKey[]).forEach((filterKey) => {
+            const filterValues = searchParams.getAll(filterKey);
+            if (filterValues.length === 0) return;
+
+            filteredColumns = filteredColumns.map((column) => ({
+                ...column,
+                tasks: column.tasks.filter((task) =>
+                    filterValues.some((value) =>
+                        filter[filterKey]?.(task, value),
+                    ),
+                ),
+            }));
+        });
+
+        return filteredColumns;
+    }, [columns, searchParams]);
 
     const handleDragTaskStart: BoardContextType['onDragTaskStart'] = (
         item,
@@ -215,7 +271,6 @@ const BoardTable: React.FC<{
                 onDragTask: handleDragTask,
 
                 taskDragState: taskDragState,
-                taskRefs: taskRefs,
             }}>
             <div className="relative grow">
                 <div className="absolute inset-0 flex overflow-x-auto">
@@ -224,7 +279,7 @@ const BoardTable: React.FC<{
                             axis="x"
                             as="div"
                             className="flex h-full items-start gap-4"
-                            values={columns}
+                            values={filteredColumns}
                             onReorder={onReorderColumn}>
                             <AnimatePresence mode="sync">
                                 {loading
@@ -241,13 +296,8 @@ const BoardTable: React.FC<{
                                               </motion.div>
                                           ),
                                       )
-                                    : columns.map((column) => (
+                                    : filteredColumns.map((column) => (
                                           <Reorder.Item
-                                              ref={(el) => {
-                                                  columnRefs.current[
-                                                      column.id
-                                                  ] = el;
-                                              }}
                                               as="div"
                                               className="flex h-full"
                                               value={column}

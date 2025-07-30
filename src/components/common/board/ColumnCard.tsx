@@ -71,6 +71,7 @@ const ColumnCard: React.FC<{
             description: 'Example of how tasks appear',
             priority: random > 0.7 ? 'High' : random > 0.4 ? 'Medium' : 'Low',
             labels: [],
+            dueDate: null,
         };
 
         onAddTask(column.id, newTask);

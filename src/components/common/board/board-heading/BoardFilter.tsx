@@ -1,3 +1,4 @@
+import type { DueDateFilter, FilterKey } from '@/constants/constants';
 import useModalTransition from '@/hooks/useModalTransition';
 import type { Label } from '@/interfaces/interfaces';
 import IconButton from '@mui/material/IconButton';
@@ -11,12 +12,40 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useSearchParams } from 'react-router-dom';
+
+const dueDateFilterOptions: Record<
+    DueDateFilter,
+    { label: string; icon: React.ReactNode; iconWrapperColor: string }
+> = {
+    noDue: {
+        label: 'No dates',
+        icon: <IconCalendarWeek className="size-4 text-gray-500" />,
+        iconWrapperColor: 'bg-gray-200',
+    },
+    overdue: {
+        label: 'Overdue',
+        icon: <IconClockX className="size-4 text-gray-700" />,
+        iconWrapperColor: 'bg-red-300',
+    },
+    nextDay: {
+        label: 'Due in the next day',
+        icon: <IconClockHour1 className="size-4 text-gray-500" />,
+        iconWrapperColor: 'bg-yellow-200',
+    },
+    nextWeek: {
+        label: 'Due in the next week',
+        icon: <IconClock className="size-4 text-gray-500" />,
+        iconWrapperColor: 'bg-gray-200',
+    },
+};
 
 const BoardFilter: React.FC<{
     open?: boolean;
     onClose?: () => void;
     labels?: Label[];
 }> = ({ open = false, onClose = () => {}, labels = [] }) => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const ref = useRef<HTMLDivElement>(null);
     const [isVisible, handleClose] = useModalTransition(open, onClose, 300);
 
@@ -33,30 +62,24 @@ const BoardFilter: React.FC<{
         };
     }, [handleClose]);
 
-    const dueDateFilterOptions: Record<
-        string,
-        { label: string; icon: React.ReactNode; iconWrapperColor: string }
-    > = {
-        noDates: {
-            label: 'No dates',
-            icon: <IconCalendarWeek className="size-4 text-gray-500" />,
-            iconWrapperColor: 'bg-gray-200',
-        },
-        overdue: {
-            label: 'Overdue',
-            icon: <IconClockX className="size-4 text-gray-700" />,
-            iconWrapperColor: 'bg-red-300',
-        },
-        nextDay: {
-            label: 'Due in the next day',
-            icon: <IconClockHour1 className="size-4 text-gray-500" />,
-            iconWrapperColor: 'bg-yellow-200',
-        },
-        nextWeek: {
-            label: 'Due in the next week',
-            icon: <IconClock className="size-4 text-gray-500" />,
-            iconWrapperColor: 'bg-gray-200',
-        },
+    const handleFilterChange = (
+        filterKey: FilterKey,
+        value: string,
+        checked: boolean,
+    ) => {
+        let filters = searchParams.getAll(filterKey);
+
+        if (!checked) filters = filters.filter((v) => v !== value);
+        else filters.push(value);
+
+        searchParams.delete(filterKey);
+        filters.forEach((v) => searchParams.append(filterKey, v));
+
+        setSearchParams(searchParams, { replace: true });
+    };
+
+    const isFilterActive = (filterKey: FilterKey, value: string): boolean => {
+        return searchParams.getAll(filterKey).includes(value);
     };
 
     if (!open) return null;
@@ -85,14 +108,22 @@ const BoardFilter: React.FC<{
                 <div>
                     <span className="text-xs font-medium">Due date</span>
                     <div className="ml-2 flex flex-col gap-2 pt-2">
-                        {Object.values(dueDateFilterOptions).map(
-                            (option, index) => (
+                        {Object.entries(dueDateFilterOptions).map(
+                            ([key, option]) => (
                                 <label
                                     className="flex cursor-pointer items-center gap-4"
-                                    key={index}>
+                                    key={key}>
                                     <input
                                         type="checkbox"
                                         className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600"
+                                        checked={isFilterActive('due', key)}
+                                        onChange={(e) =>
+                                            handleFilterChange(
+                                                'due',
+                                                key,
+                                                e.target.checked,
+                                            )
+                                        }
                                     />
                                     <div className="flex items-center gap-1">
                                         <div
@@ -112,11 +143,19 @@ const BoardFilter: React.FC<{
                 {/* Label filter */}
                 <div>
                     <span className="text-xs font-medium">Labels</span>
-                    <div className="ml-2 flex flex-col gap-2 pt-2">
+                    <div className="ml-2 flex flex-col gap-1.5 pt-2">
                         <label className="flex cursor-pointer items-center gap-4">
                             <input
                                 type="checkbox"
                                 className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600"
+                                checked={isFilterActive('label', 'none')}
+                                onChange={(e) =>
+                                    handleFilterChange(
+                                        'label',
+                                        'none',
+                                        e.target.checked,
+                                    )
+                                }
                             />
                             <div className="flex items-center gap-1">
                                 <div className={`rounded-full bg-gray-200 p-1`}>
@@ -132,10 +171,24 @@ const BoardFilter: React.FC<{
                                 key={label.id}>
                                 <input
                                     type="checkbox"
-                                    className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600"
+                                    className="h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600"
+                                    checked={isFilterActive(
+                                        'label',
+                                        label.name,
+                                    )}
+                                    onChange={(e) =>
+                                        handleFilterChange(
+                                            'label',
+                                            label.name,
+                                            e.target.checked,
+                                        )
+                                    }
                                 />
                                 <div
-                                    className={`${label.color} w-full rounded-sm px-2 py-2`}>
+                                    className="w-full rounded-sm px-2 py-1.5 text-sm text-gray-100"
+                                    style={{
+                                        backgroundColor: label.color,
+                                    }}>
                                     {label.name}
                                 </div>
                             </label>
