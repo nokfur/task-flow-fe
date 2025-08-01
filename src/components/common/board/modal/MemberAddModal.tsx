@@ -47,6 +47,7 @@ const MemberCard: React.FC<{
     onUpdateRole?: (id: string, role: BoardMemberRole) => void;
     isRemoving?: boolean;
     isUpdating?: boolean;
+    currentRole?: BoardMemberRole;
 }> = ({
     member,
     isSelf,
@@ -54,8 +55,24 @@ const MemberCard: React.FC<{
     onUpdateRole = () => {},
     isRemoving = false,
     isUpdating = false,
+    currentRole,
 }) => {
-    const roles: Partial<BoardMemberRole[]> = ['Member', 'Admin'];
+    const roleOptions: Partial<BoardMemberRole[]> =
+        currentRole === 'Owner'
+            ? ['Member', 'Admin']
+            : currentRole === 'Admin'
+              ? ['Member']
+              : [];
+
+    const isUpdateAllowed = (() => {
+        const roleOrders: Record<BoardMemberRole, number> = {
+            Owner: 3,
+            Admin: 2,
+            Member: 1,
+        };
+        return roleOrders[currentRole || 'Member'] > roleOrders[member.role];
+    })();
+
     return (
         <div className="flex items-center justify-between rounded-lg bg-gray-100/70 px-4 py-2">
             <div className="flex items-center gap-3">
@@ -75,8 +92,10 @@ const MemberCard: React.FC<{
                 </div>
             </div>
 
+            {/* User role selection & remove */}
             <div className="text-sm font-medium text-gray-700">
-                {member.role === 'Owner' ? (
+                {/* Skip updating if member is Owner or is self or permission not allowed */}
+                {member.role === 'Owner' || isSelf || !isUpdateAllowed ? (
                     member.role
                 ) : (
                     <div className="flex items-center gap-1">
@@ -93,7 +112,7 @@ const MemberCard: React.FC<{
                                 variant="standard"
                                 disableUnderline
                                 className="text-sm font-medium text-gray-700">
-                                {roles.map((role) => (
+                                {roleOptions.map((role) => (
                                     <MenuItem
                                         value={role}
                                         className="text-sm font-medium text-gray-700">
@@ -128,7 +147,8 @@ const MemberCard: React.FC<{
 const MemberAddModal: React.FC<{
     open?: boolean;
     onClose?: () => void;
-}> = ({ open = false, onClose = () => {} }) => {
+    currentRole?: BoardMemberRole;
+}> = ({ open = false, onClose = () => {}, currentRole }) => {
     const apiEndpoints = useApiEndpoints();
     const { user } = useAuthProvider();
     const { boardId = '' } = useParams<{ boardId: string }>();
@@ -541,6 +561,7 @@ const MemberAddModal: React.FC<{
                                             isUpdating={
                                                 updatingMemberId === member.id
                                             }
+                                            currentRole={currentRole}
                                         />
                                     </motion.div>
                                 ))

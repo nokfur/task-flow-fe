@@ -37,6 +37,7 @@ const BoardHeading: React.FC<{
             <MemberAddModal
                 open={openMemberAdd}
                 onClose={() => setOpenMemberAdd(false)}
+                currentRole={board.userRole}
             />
 
             <div className="w-full bg-white/50 backdrop-blur-sm">

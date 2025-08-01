@@ -32,6 +32,15 @@ export interface BoardGeneral {
     isOwn: boolean;
 }
 
+export interface Board {
+    id: string;
+    title: string;
+    description: string;
+    columns: Column[];
+    labels: Label[];
+    userRole?: BoardMemberRole; // current accessing user role in board
+}
+
 export interface BoardMember {
     id: string;
     name: string;
@@ -43,14 +52,6 @@ export interface UserSearch {
     id: string;
     name: string;
     email: string;
-}
-
-export interface Board {
-    id: string;
-    title: string;
-    description: string;
-    columns: Column[];
-    labels: Label[];
 }
 
 export interface Label {
