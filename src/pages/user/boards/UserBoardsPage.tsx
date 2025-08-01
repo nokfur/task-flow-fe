@@ -334,7 +334,7 @@ const UserBoardsPage = () => {
                 </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="mt-6 grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {activeTab !== 2 && (
                     <ButtonBase
                         className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 px-3 py-9 duration-300 hover:border-blue-300 hover:bg-blue-50"

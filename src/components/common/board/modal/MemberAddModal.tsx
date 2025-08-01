@@ -6,6 +6,7 @@ import useApiEndpoints from '@/hooks/useApiEndpoints';
 import useDebounce from '@/hooks/useDebounce';
 import useModalTransition from '@/hooks/useModalTransition';
 import type { BoardMember, UserSearch } from '@/interfaces/interfaces';
+import type { BoardMemberRequest } from '@/interfaces/requestInterfaces';
 import { getFirstLetterOfFirst2Word } from '@/utilities/utils';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -13,12 +14,31 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
-import { IconMail, IconTrash, IconX } from '@tabler/icons-react';
+import {
+    IconCrown,
+    IconMail,
+    IconTrash,
+    IconUser,
+    IconX,
+} from '@tabler/icons-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+
+const RoleDetail: Partial<
+    Record<BoardMemberRole, { description: string; icon: ReactNode }>
+> = {
+    Member: {
+        description: 'Can view and edit tasks',
+        icon: <IconUser className="size-4 text-gray-400" />,
+    },
+    Admin: {
+        description: 'Can manage board settings and members',
+        icon: <IconCrown className="size-4 text-amber-500" />,
+    },
+};
 
 const MemberCard: React.FC<{
     member: BoardMember;
@@ -26,12 +46,14 @@ const MemberCard: React.FC<{
     onDelete?: (id: string) => void;
     onUpdateRole?: (id: string, role: BoardMemberRole) => void;
     isRemoving?: boolean;
+    isUpdating?: boolean;
 }> = ({
     member,
     isSelf,
     onDelete = () => {},
     onUpdateRole = () => {},
     isRemoving = false,
+    isUpdating = false,
 }) => {
     const roles: Partial<BoardMemberRole[]> = ['Member', 'Admin'];
     return (
@@ -58,26 +80,33 @@ const MemberCard: React.FC<{
                     member.role
                 ) : (
                     <div className="flex items-center gap-1">
-                        <Select
-                            value={member.role}
-                            onChange={(e) =>
-                                onUpdateRole(member.id, e.target.value)
-                            }
-                            variant="standard"
-                            disableUnderline
-                            className="text-sm font-medium text-gray-700">
-                            {roles.map((role) => (
-                                <MenuItem
-                                    value={role}
-                                    className="text-sm font-medium text-gray-700">
-                                    {
-                                        BoardMemberRole[
-                                            role as keyof typeof BoardMemberRole
-                                        ]
-                                    }
-                                </MenuItem>
-                            ))}
-                        </Select>
+                        {isUpdating ? (
+                            <div>
+                                <SpinningCircle loading />
+                            </div>
+                        ) : (
+                            <Select
+                                value={member.role}
+                                onChange={(e) =>
+                                    onUpdateRole(member.id, e.target.value)
+                                }
+                                variant="standard"
+                                disableUnderline
+                                className="text-sm font-medium text-gray-700">
+                                {roles.map((role) => (
+                                    <MenuItem
+                                        value={role}
+                                        className="text-sm font-medium text-gray-700">
+                                        {
+                                            BoardMemberRole[
+                                                role as keyof typeof BoardMemberRole
+                                            ]
+                                        }
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        )}
+
                         <Tooltip title="Remove member">
                             <IconButton
                                 className="text-red-500 hover:text-red-600"
@@ -106,17 +135,22 @@ const MemberAddModal: React.FC<{
 
     const [members, setMembers] = useState<BoardMember[]>([]);
     const [isVisible, handleClose] = useModalTransition(open, onClose, 300);
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<BoardMemberRole>('Member');
     const [selectedMembers, setSelectedMembers] = useState<BoardMember[]>([]);
 
-    const [isSearching, setIsSearching] = useState(false);
-    const [isAdding, setIsAdding] = useState(false);
+    const [searching, setSearching] = useState(false);
+    const [adding, setAdding] = useState(false);
     const [searchResults, setSearchResults] = useState<UserSearch[]>([]);
+    const [searchResultVisible, setSearchResultVisible] = useState(false);
+    const searchResultRef = useRef<HTMLDivElement | null>(null);
 
     const [removingMemberId, setRemovingMemberId] = useState<string | null>(
+        null,
+    );
+    const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(
         null,
     );
 
@@ -124,48 +158,74 @@ const MemberAddModal: React.FC<{
 
     useEffect(() => {
         if (debounce) {
-            setIsSearching(true);
+            setSearching(true);
+            setSearchResultVisible(true);
 
             apiEndpoints.users
                 .search(
                     debounce,
-                    members.map((m) => m.id),
+                    members
+                        .map((m) => m.id)
+                        .concat(selectedMembers.map((m) => m.id)),
                 )
                 .then(({ data }: { data: UserSearch[] }) => {
                     setSearchResults(data);
                 })
-                .finally(() => setIsSearching(false));
+                .finally(() => setSearching(false));
         } else {
+            setSearchResultVisible(false);
             setSearchResults([]);
         }
     }, [debounce]);
 
     useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                searchResultRef.current &&
+                !searchResultRef.current.contains(event.target as Node)
+            ) {
+                setSearchResultVisible(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    useEffect(() => {
         if (open) {
-            setIsLoading(true);
+            setLoading(true);
             apiEndpoints.users
                 .getBoardMembers(boardId)
                 .then(({ data }: { data: BoardMember[] }) => {
                     setMembers(data);
                 })
-                .finally(() => setIsLoading(false));
+                .finally(() => setLoading(false));
         }
     }, [open, boardId]);
 
     const handleInvite = () => {
-        if (!email) return;
+        if (selectedMembers.length === 0) return;
 
-        setIsAdding(true);
+        setAdding(true);
+
+        const payload: BoardMemberRequest[] = selectedMembers.map((m) => ({
+            memberId: m.id,
+            role: m.role,
+        }));
         apiEndpoints.users
-            .addBoardMember(boardId, { email, role })
-            .then(({ data }: { data: BoardMember }) => {
+            .addBoardMembers(boardId, payload)
+            .then(() => {
                 toast.success('Member added successfully');
 
-                setMembers((prev) => [...prev, data]);
-                setSearchResults([]);
                 setEmail('');
+                setMembers((prev) => [...prev, ...selectedMembers]);
+                setSearchResults([]);
+                setSelectedMembers([]);
             })
-            .finally(() => setIsAdding(false));
+            .finally(() => setAdding(false));
     };
 
     const handleRemoveMember = (id: string) => {
@@ -173,7 +233,6 @@ const MemberAddModal: React.FC<{
         apiEndpoints.users
             .deleteBoardMember(boardId, id)
             .then(() => {
-                toast.success('Member removed successfully');
                 setMembers((prev) => prev.filter((m) => m.id !== id));
             })
             .finally(() => {
@@ -184,10 +243,30 @@ const MemberAddModal: React.FC<{
     const handleSelectMember = (member: UserSearch) => {
         setSelectedMembers((prev) => [...prev, { ...member, role }]);
         setEmail('');
+        setSearchResultVisible(false);
         setSearchResults([]);
     };
 
-    const handleUpdateMemberRole = (id: string, role: BoardMemberRole) => {};
+    const handleDeSelectMember = (memberId: string) => {
+        setSelectedMembers((prev) => prev.filter((m) => m.id !== memberId));
+    };
+
+    const handleUpdateMemberRole = (
+        memberId: string,
+        role: BoardMemberRole,
+    ) => {
+        setUpdatingMemberId(memberId);
+        apiEndpoints.users
+            .updateBoardMemberRole(boardId, memberId, role)
+            .then(() => {
+                setMembers((prev) =>
+                    prev.map((member) =>
+                        member.id === memberId ? { ...member, role } : member,
+                    ),
+                );
+            })
+            .finally(() => setUpdatingMemberId(null));
+    };
 
     if (!open) return null;
     return createPortal(
@@ -222,20 +301,45 @@ const MemberAddModal: React.FC<{
                     {/* Email Input with Search results */}
                     <div className="relative mx-4 mt-2">
                         {/* Email input and role selection */}
-                        <div className="flex items-center gap-2">
-                            <div className="flex grow flex-wrap rounded-lg border border-gray-300 p-2">
-                                {selectedMembers.map((member) => (
-                                    <div
-                                        key={member.id}
-                                        className="flex items-center justify-center gap-1 rounded-md bg-gray-100 px-1 py-0.5">
-                                        <span className="text-sm font-medium text-gray-500">
-                                            {member.name}
-                                        </span>
-                                        <IconButton className="rounded-sm p-0.5">
-                                            <IconX className="size-4 text-gray-500" />
-                                        </IconButton>
+                        <div className="flex items-start gap-2">
+                            <motion.div
+                                layout
+                                className="flex w-full flex-col gap-2 rounded-lg border border-gray-300 p-2">
+                                {selectedMembers.length > 0 && (
+                                    <div className="flex flex-wrap gap-1">
+                                        <AnimatePresence>
+                                            {selectedMembers.map((member) => (
+                                                <motion.div
+                                                    layout
+                                                    initial={{
+                                                        opacity: 0,
+                                                    }}
+                                                    animate={{
+                                                        opacity: 1,
+                                                    }}
+                                                    exit={{
+                                                        opacity: 0,
+                                                    }}
+                                                    key={member.id}
+                                                    className="flex items-center justify-center gap-1 rounded-md bg-gray-100 px-1 py-0.5">
+                                                    <span className="text-sm font-medium text-gray-500">
+                                                        {member.name} (
+                                                        {member.role})
+                                                    </span>
+                                                    <IconButton
+                                                        className="rounded-sm p-0.5"
+                                                        onClick={() =>
+                                                            handleDeSelectMember(
+                                                                member.id,
+                                                            )
+                                                        }>
+                                                        <IconX className="size-4 text-gray-500" />
+                                                    </IconButton>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
                                     </div>
-                                ))}
+                                )}
 
                                 <InputField
                                     value={email}
@@ -244,14 +348,18 @@ const MemberAddModal: React.FC<{
                                     }
                                     placeholder="Enter email address or name"
                                     startIcon={<IconMail />}
-                                    className="border-none! shadow-none!"
                                 />
-                            </div>
+                            </motion.div>
 
                             <Select
                                 value={role}
                                 onChange={(e) =>
                                     setRole(e.target.value as BoardMemberRole)
+                                }
+                                renderValue={(selected) =>
+                                    BoardMemberRole[
+                                        selected as keyof typeof BoardMemberRole
+                                    ]
                                 }
                                 variant="standard"
                                 disableUnderline
@@ -264,52 +372,56 @@ const MemberAddModal: React.FC<{
                                 ).map((role) => (
                                     <MenuItem
                                         value={role}
-                                        className="text-sm text-gray-700">
-                                        {
-                                            BoardMemberRole[
-                                                role as keyof typeof BoardMemberRole
-                                            ]
-                                        }
+                                        className="flex max-w-40 flex-col gap-1 text-sm text-gray-700">
+                                        <div className="flex items-center justify-center gap-1">
+                                            {RoleDetail[role]?.icon}
+
+                                            {
+                                                BoardMemberRole[
+                                                    role as keyof typeof BoardMemberRole
+                                                ]
+                                            }
+                                        </div>
+                                        <span className="inline-block w-full text-center text-xs break-words whitespace-pre-line">
+                                            {RoleDetail[role]?.description}
+                                        </span>
                                     </MenuItem>
                                 ))}
                             </Select>
 
                             <Button
                                 onClick={handleInvite}
-                                disabled={!email || isAdding}
+                                disabled={selectedMembers.length === 0}
                                 className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white normal-case hover:bg-blue-700 disabled:bg-gray-300"
-                                startIcon={
-                                    <SpinningCircle loading={isAdding} />
-                                }>
+                                startIcon={<SpinningCircle loading={adding} />}>
                                 Share
                             </Button>
                         </div>
 
                         {/* Search Results */}
-                        {email && (
-                            <div className="absolute top-full right-0 left-0 z-50 mt-1 max-h-80 overflow-y-auto rounded-lg border border-gray-200 bg-white py-2 shadow-sm">
-                                <AnimatePresence mode="sync">
-                                    {isSearching ? (
-                                        <motion.div
-                                            initial={{
-                                                opacity: 0,
-                                                height: 0,
-                                            }}
-                                            animate={{
-                                                opacity: 1,
-                                                height: 'auto',
-                                            }}
-                                            exit={{
-                                                opacity: 0,
-                                                height: 0,
-                                            }}
-                                            className="flex items-center justify-center py-2">
-                                            <SpinningCircle loading />
-                                        </motion.div>
-                                    ) : searchResults.length > 0 ? (
-                                        searchResults.map((user) => (
+                        <AnimatePresence mode="sync">
+                            {searchResultVisible && (
+                                <motion.div
+                                    layout
+                                    className="absolute top-full right-0 left-0 z-50 mt-1 max-h-80 overflow-y-auto rounded-lg border border-gray-200 bg-white py-2 shadow-sm"
+                                    initial={{
+                                        opacity: 0,
+                                        height: 0,
+                                    }}
+                                    animate={{
+                                        opacity: 1,
+                                        height: 'auto',
+                                    }}
+                                    exit={{
+                                        opacity: 0,
+                                        height: 0,
+                                    }}
+                                    ref={searchResultRef}>
+                                    <AnimatePresence mode="sync">
+                                        {searching ? (
                                             <motion.div
-                                                key={user.id}
+                                                layout
+                                                key="searching"
                                                 initial={{
                                                     opacity: 0,
                                                     height: 0,
@@ -322,63 +434,86 @@ const MemberAddModal: React.FC<{
                                                     opacity: 0,
                                                     height: 0,
                                                 }}
-                                                transition={{
-                                                    duration: 0.3,
-                                                    ease: 'easeInOut',
-                                                }}>
-                                                <Button
-                                                    onClick={() => {
-                                                        handleSelectMember(
-                                                            user,
-                                                        );
-                                                    }}
-                                                    className="flex w-full items-center justify-start gap-3 px-3 py-1.5 text-left normal-case transition-colors hover:bg-gray-50">
-                                                    <Avatar
-                                                        className="size-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-800 text-xs text-white"
-                                                        alt={user?.name}>
-                                                        {getFirstLetterOfFirst2Word(
-                                                            user?.name,
-                                                        )}
-                                                    </Avatar>
-                                                    <div>
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {user.name}
-                                                        </div>
-                                                        <div className="text-xs text-gray-500">
-                                                            {user.email}
-                                                        </div>
-                                                    </div>
-                                                </Button>
+                                                className="flex items-center justify-center py-2">
+                                                <SpinningCircle loading />
                                             </motion.div>
-                                        ))
-                                    ) : (
-                                        <motion.div
-                                            initial={{
-                                                opacity: 0,
-                                                height: 0,
-                                            }}
-                                            animate={{
-                                                opacity: 1,
-                                                height: 'auto',
-                                            }}
-                                            exit={{
-                                                opacity: 0,
-                                                height: 0,
-                                            }}
-                                            className="px-4 py-2 text-sm text-gray-700">
-                                            Looks like that person isn't a
-                                            TaskFlow member yet!
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        )}
+                                        ) : searchResults.length > 0 ? (
+                                            searchResults.map((user) => (
+                                                <motion.div
+                                                    layout
+                                                    key={user.id}
+                                                    initial={{
+                                                        opacity: 0,
+                                                        height: 0,
+                                                    }}
+                                                    animate={{
+                                                        opacity: 1,
+                                                        height: 'auto',
+                                                    }}
+                                                    exit={{
+                                                        opacity: 0,
+                                                        height: 0,
+                                                    }}
+                                                    transition={{
+                                                        duration: 0.3,
+                                                        ease: 'easeInOut',
+                                                    }}>
+                                                    <Button
+                                                        onClick={() => {
+                                                            handleSelectMember(
+                                                                user,
+                                                            );
+                                                        }}
+                                                        className="flex w-full items-center justify-start gap-3 px-3 py-1.5 text-left normal-case transition-colors hover:bg-gray-50">
+                                                        <Avatar
+                                                            className="size-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-800 text-xs text-white"
+                                                            alt={user?.name}>
+                                                            {getFirstLetterOfFirst2Word(
+                                                                user?.name,
+                                                            )}
+                                                        </Avatar>
+                                                        <div>
+                                                            <div className="text-sm font-medium text-gray-900">
+                                                                {user.name}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {user.email}
+                                                            </div>
+                                                        </div>
+                                                    </Button>
+                                                </motion.div>
+                                            ))
+                                        ) : (
+                                            <motion.div
+                                                layout
+                                                key="no-result"
+                                                initial={{
+                                                    opacity: 0,
+                                                    height: 0,
+                                                }}
+                                                animate={{
+                                                    opacity: 1,
+                                                    height: 'auto',
+                                                }}
+                                                exit={{
+                                                    opacity: 0,
+                                                    height: 0,
+                                                }}
+                                                className="px-4 py-2 text-sm text-gray-700">
+                                                Looks like that person isn't a
+                                                TaskFlow member yet!
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Member list */}
                     <div className="flex max-h-[60vh] flex-col gap-2 overflow-y-auto px-4 pb-4">
                         <AnimatePresence mode="sync">
-                            {isLoading ? (
+                            {loading ? (
                                 <motion.div
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
@@ -402,6 +537,9 @@ const MemberAddModal: React.FC<{
                                             }
                                             isRemoving={
                                                 removingMemberId === member.id
+                                            }
+                                            isUpdating={
+                                                updatingMemberId === member.id
                                             }
                                         />
                                     </motion.div>

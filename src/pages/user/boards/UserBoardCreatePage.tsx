@@ -26,17 +26,13 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { BoardMemberRole } from '@/constants/constants';
 import MemberAddModal from '@/components/user/MemberAddModal';
+import type { BoardMemberRequest } from '@/interfaces/requestInterfaces';
 
 interface BoardTemplatePreview {
     id: string;
     title: string;
     description: string;
     columns: string[];
-}
-
-interface BoardMemberRequest {
-    memberId: string;
-    role: 'Member' | 'Admin' | 'Owner';
 }
 
 const TemplateCard: React.FC<{

@@ -20,7 +20,12 @@ export interface BoardAddRequest {
     title: string;
     description: string;
     templateId: string;
-    boardMembers: { memberId: string; role: BoardMemberRole }[];
+    boardMembers: BoardMemberRequest[];
+}
+
+export interface BoardMemberRequest {
+    memberId: string;
+    role: BoardMemberRole;
 }
 
 export interface ColumnAddRequest {

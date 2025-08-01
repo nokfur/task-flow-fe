@@ -19,11 +19,11 @@ const roleDetail: Partial<
 > = {
     Member: {
         description: 'Can view and edit tasks',
-        icon: <IconUser className="h-5 w-5 text-gray-400" />,
+        icon: <IconUser className="size-5 text-gray-400" />,
     },
     Admin: {
         description: 'Can manage board settings and members',
-        icon: <IconCrown className="h-5 w-5 text-amber-500" />,
+        icon: <IconCrown className="size-5 text-amber-500" />,
     },
 };
 
@@ -145,15 +145,12 @@ const MemberAddModal: React.FC<{
                                     className="flex w-full items-center justify-start gap-3 rounded-lg border border-gray-300 px-3 py-1.5 text-left normal-case transition-colors"
                                     initial={{
                                         opacity: 0,
-                                        height: 0,
                                     }}
                                     animate={{
                                         opacity: 1,
-                                        height: 'auto',
                                     }}
                                     exit={{
                                         opacity: 0,
-                                        height: 0,
                                     }}>
                                     <Avatar
                                         className="size-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-800 text-xs text-white"
@@ -181,15 +178,12 @@ const MemberAddModal: React.FC<{
                                     key="member-unselected"
                                     initial={{
                                         opacity: 0,
-                                        height: 0,
                                     }}
                                     animate={{
                                         opacity: 1,
-                                        height: 'auto',
                                     }}
                                     exit={{
                                         opacity: 0,
-                                        height: 0,
                                     }}>
                                     <InputField
                                         value={email}
@@ -205,9 +199,10 @@ const MemberAddModal: React.FC<{
                         </AnimatePresence>
 
                         {/* Search Results */}
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             {searchResultVisible && (
                                 <motion.div
+                                    layout
                                     className="absolute top-full right-0 left-0 z-50 mt-1 max-h-80 overflow-y-auto rounded-lg border border-gray-200 bg-white py-2 shadow-sm"
                                     initial={{
                                         opacity: 0,
@@ -225,6 +220,7 @@ const MemberAddModal: React.FC<{
                                     <AnimatePresence mode="sync">
                                         {searching ? (
                                             <motion.div
+                                                layout
                                                 key="searching"
                                                 initial={{
                                                     opacity: 0,
@@ -244,6 +240,7 @@ const MemberAddModal: React.FC<{
                                         ) : searchResults.length > 0 ? (
                                             searchResults.map((user) => (
                                                 <motion.div
+                                                    layout
                                                     key={user.id}
                                                     initial={{
                                                         opacity: 0,
@@ -288,6 +285,7 @@ const MemberAddModal: React.FC<{
                                             ))
                                         ) : (
                                             <motion.div
+                                                layout
                                                 key="no-result"
                                                 initial={{
                                                     opacity: 0,

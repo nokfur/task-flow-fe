@@ -3,6 +3,7 @@ import useAxios from '@/hooks/useAxios';
 import type { Board } from '@/interfaces/interfaces';
 import type {
     BoardAddRequest,
+    BoardMemberRequest,
     ChangePasswordRequest,
     ColumnAddRequest,
     ColumnPositionUpdateRequest,
@@ -76,12 +77,24 @@ const useApiEndpoints = () => {
                 axiosClient.patch(`/users/password`, payload),
             getBoardMembers: (boardId: string) =>
                 axiosClient.get(`/boards/${boardId}/members`),
-            addBoardMember: (
+            addBoardMembers: (boardId: string, payload: BoardMemberRequest[]) =>
+                axiosClient.post(`/boards/${boardId}/members`, payload),
+            deleteBoardMember: (boardId: string, memberId: string) =>
+                axiosClient.delete(`/boards/${boardId}/members/${memberId}`),
+            updateBoardMemberRole: (
                 boardId: string,
-                payload: { email: string; role: BoardMemberRole },
-            ) => axiosClient.post(`/boards/${boardId}/members`, payload),
-            deleteBoardMember: (boardId: string, id: string) =>
-                axiosClient.delete(`/boards/${boardId}/members/${id}`),
+                memberId: string,
+                role: BoardMemberRole,
+            ) =>
+                axiosClient.patch(
+                    `/boards/${boardId}/members/${memberId}/role`,
+                    role,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                ),
         },
         admin: {
             boards: {
