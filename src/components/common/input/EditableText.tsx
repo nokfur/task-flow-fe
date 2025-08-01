@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 interface Props extends InputProps {
     onSave: (text: string) => void;
     hasActions?: boolean;
+    editNotAllow?: boolean;
 }
 
 const EditableText: React.FC<Props> = (props) => {
@@ -18,6 +19,7 @@ const EditableText: React.FC<Props> = (props) => {
         onSave,
         placeholder,
         hasActions = false,
+        editNotAllow = false,
     } = props;
 
     const [isEditing, setIsEditing] = useState(false);
@@ -64,7 +66,7 @@ const EditableText: React.FC<Props> = (props) => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
                 className="w-full">
-                {isEditing || !value ? (
+                {!editNotAllow && (isEditing || !value) ? (
                     <>
                         <InputField
                             {...props}
@@ -99,7 +101,7 @@ const EditableText: React.FC<Props> = (props) => {
                 ) : (
                     <p
                         className={`${className} cursor-pointer break-words whitespace-pre-line`}
-                        onClick={() => setIsEditing(true)}>
+                        onClick={() => !editNotAllow && setIsEditing(true)}>
                         {value}
                     </p>
                 )}

@@ -10,11 +10,13 @@ const BoardDescription: React.FC<{
     onClose?: () => void;
     onUpdate?: (value: string) => void;
     description?: string;
+    editNotAllow?: boolean;
 }> = ({
     open = false,
     onClose = () => {},
     onUpdate = () => {},
     description = '',
+    editNotAllow = false,
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [isVisible, handleClose] = useModalTransition(open, onClose, 300);
@@ -70,6 +72,7 @@ const BoardDescription: React.FC<{
                     className="field-sizing-content text-sm!"
                     isArea
                     hasActions
+                    editNotAllow={editNotAllow}
                 />
             </div>
         </div>,

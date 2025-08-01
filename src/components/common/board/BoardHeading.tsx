@@ -26,6 +26,7 @@ const BoardHeading: React.FC<{
                 onClose={() => setOpenDescription(false)}
                 onUpdate={(value) => onUpdateBoard(value, 'description')}
                 description={board.description}
+                editNotAllow={board.userRole === 'Member'}
             />
 
             <BoardFilter
@@ -55,6 +56,9 @@ const BoardHeading: React.FC<{
                                             onUpdateBoard(val, 'title')
                                         }
                                         className="px-3! py-1! text-lg! font-medium"
+                                        editNotAllow={
+                                            board.userRole === 'Member'
+                                        }
                                     />
                                 </div>
                             )}
