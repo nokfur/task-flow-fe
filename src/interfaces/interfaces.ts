@@ -36,7 +36,13 @@ export interface BoardMember {
     id: string;
     name: string;
     email: string;
-    role?: BoardMemberRole;
+    role: BoardMemberRole;
+}
+
+export interface UserSearch {
+    id: string;
+    name: string;
+    email: string;
 }
 
 export interface Board {

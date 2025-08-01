@@ -194,9 +194,15 @@ const TaskCard: React.FC<{
                         variant="standard"
                         disableUnderline
                         className={`${TaskPriorityColor[task.priority]} h-6 rounded-xl px-3 pt-0.5 text-xs font-medium`}>
-                        <MenuItem value="High">High</MenuItem>
-                        <MenuItem value="Medium">Medium</MenuItem>
-                        <MenuItem value="Low">Low</MenuItem>
+                        <MenuItem value="High" className="text-sm">
+                            High
+                        </MenuItem>
+                        <MenuItem value="Medium" className="text-sm">
+                            Medium
+                        </MenuItem>
+                        <MenuItem value="Low" className="text-sm">
+                            Low
+                        </MenuItem>
                     </Select>
 
                     {task.dueDate &&

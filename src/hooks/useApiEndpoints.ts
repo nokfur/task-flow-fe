@@ -1,4 +1,5 @@
-import useAxios from '@/hooks/axios-client';
+import type { BoardMemberRole } from '@/constants/constants';
+import useAxios from '@/hooks/useAxios';
 import type { Board } from '@/interfaces/interfaces';
 import type {
     BoardAddRequest,
@@ -73,6 +74,14 @@ const useApiEndpoints = () => {
                 axiosClient.post(`/users?search=${query}`, exceptIds),
             changePassword: (payload: ChangePasswordRequest) =>
                 axiosClient.patch(`/users/password`, payload),
+            getBoardMembers: (boardId: string) =>
+                axiosClient.get(`/boards/${boardId}/members`),
+            addBoardMember: (
+                boardId: string,
+                payload: { email: string; role: BoardMemberRole },
+            ) => axiosClient.post(`/boards/${boardId}/members`, payload),
+            deleteBoardMember: (boardId: string, id: string) =>
+                axiosClient.delete(`/boards/${boardId}/members/${id}`),
         },
         admin: {
             boards: {

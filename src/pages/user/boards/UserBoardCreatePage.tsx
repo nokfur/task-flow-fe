@@ -9,7 +9,6 @@ import {
 } from '@/utilities/utils';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import {
     IconLayoutBoardSplit,
     IconTrash,
@@ -17,7 +16,7 @@ import {
 } from '@tabler/icons-react';
 import { useFormik } from 'formik';
 import type React from 'react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
@@ -26,10 +25,7 @@ import IconButton from '@mui/material/IconButton';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { BoardMemberRole } from '@/constants/constants';
-
-const TeamMemberAddModal = lazy(
-    () => import('@/components/user/TeamMemberAddModal'),
-);
+import MemberAddModal from '@/components/user/MemberAddModal';
 
 interface BoardTemplatePreview {
     id: string;
@@ -50,7 +46,7 @@ const TemplateCard: React.FC<{
 }> = ({ template, selected, onClick = () => {} }) => {
     return (
         <div
-            className={`cursor-pointer rounded-lg border-2 px-4 py-4 duration-200 ${selected ? 'border-blue-400 bg-blue-50' : 'border-gray-200'}`}
+            className={`h-full cursor-pointer rounded-lg border-2 px-4 py-4 duration-200 ${selected ? 'border-blue-400 bg-blue-50' : 'border-gray-200'}`}
             onClick={onClick}>
             <h5 className="font-medium">{template.title}</h5>
             <p className="mt-2 mb-3 text-xs text-gray-500">
@@ -243,19 +239,17 @@ const UserBoardCreatePage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 px-6 py-8 md:px-12 lg:px-24">
-            <Suspense fallback={<CircularProgress />}>
-                <TeamMemberAddModal
-                    open={isOpenMemberModal}
-                    onClose={() => setIsOpenMemberModal(false)}
-                    memberIds={formik.values.members.map((m) => m.id)}
-                    onSuccess={(newMember) => {
-                        formik.setFieldValue('members', [
-                            ...formik.values.members,
-                            newMember,
-                        ]);
-                    }}
-                />
-            </Suspense>
+            <MemberAddModal
+                open={isOpenMemberModal}
+                onClose={() => setIsOpenMemberModal(false)}
+                memberIds={formik.values.members.map((m) => m.id)}
+                onSuccess={(newMember) => {
+                    formik.setFieldValue('members', [
+                        ...formik.values.members,
+                        newMember,
+                    ]);
+                }}
+            />
 
             <div className="flex flex-col items-center justify-center">
                 <h1 className="text-3xl font-bold">Create New Board</h1>
@@ -335,30 +329,49 @@ const UserBoardCreatePage = () => {
                             📝 Choose Template
                         </h5>
 
-                        {gettingTemplates ? (
-                            <div className="flex justify-center">
-                                <SpinningCircle loading={gettingTemplates} />
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                {boardTemplates.map((template, index) => (
-                                    <TemplateCard
-                                        template={template}
-                                        selected={
-                                            formik.values.templateId ===
-                                            template.id
-                                        }
-                                        onClick={() =>
-                                            formik.setFieldValue(
-                                                'templateId',
-                                                template.id,
-                                            )
-                                        }
-                                        key={index}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                        <AnimatePresence mode="wait">
+                            {gettingTemplates ? (
+                                <motion.div
+                                    className="flex justify-center"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}>
+                                    <SpinningCircle loading />
+                                </motion.div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <AnimatePresence>
+                                        {boardTemplates.map((template) => (
+                                            <motion.div
+                                                key={template.id}
+                                                initial={{
+                                                    opacity: 0,
+                                                    height: 0,
+                                                }}
+                                                animate={{
+                                                    opacity: 1,
+                                                    height: 'auto',
+                                                }}>
+                                                <TemplateCard
+                                                    template={template}
+                                                    selected={
+                                                        formik.values
+                                                            .templateId ===
+                                                        template.id
+                                                    }
+                                                    onClick={() =>
+                                                        formik.setFieldValue(
+                                                            'templateId',
+                                                            template.id,
+                                                        )
+                                                    }
+                                                />
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     <div>

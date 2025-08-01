@@ -1,7 +1,7 @@
 import { BoardTable } from '@/components/common/board/BoardTable';
 import InputField from '@/components/common/input/InputField';
 import SpinningCircle from '@/components/common/loader/SpinningCircle';
-import useBoardUpdaters from '@/hooks/board-updaters';
+import useBoardUpdaters from '@/hooks/useBoardUpdaters';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
 import type { Board, Task } from '@/interfaces/interfaces';
 import { getFormikTouchError } from '@/utilities/utils';

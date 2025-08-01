@@ -1,5 +1,6 @@
-import BoardDescription from '@/components/common/board/board-heading/BoardDescription';
-import BoardFilter from '@/components/common/board/board-heading/BoardFilter';
+import BoardDescription from '@/components/common/board/modal/BoardDescription';
+import BoardFilter from '@/components/common/board/modal/BoardFilter';
+import MemberAddModal from '@/components/common/board/modal/MemberAddModal';
 import EditableText from '@/components/common/input/EditableText';
 import type { Board } from '@/interfaces/interfaces';
 import Button from '@mui/material/Button';
@@ -16,6 +17,7 @@ const BoardHeading: React.FC<{
 }> = ({ board, loading, onUpdateBoard = () => {} }) => {
     const [openDescription, setOpenDescription] = useState(false);
     const [openFilter, setOpenFilter] = useState(false);
+    const [openMemberAdd, setOpenMemberAdd] = useState(false);
 
     return (
         <>
@@ -30,6 +32,11 @@ const BoardHeading: React.FC<{
                 open={openFilter}
                 onClose={() => setOpenFilter(false)}
                 labels={board.labels}
+            />
+
+            <MemberAddModal
+                open={openMemberAdd}
+                onClose={() => setOpenMemberAdd(false)}
             />
 
             <div className="w-full bg-white/50 backdrop-blur-sm">
@@ -71,7 +78,8 @@ const BoardHeading: React.FC<{
 
                             <Button
                                 className="bg-violet-600 px-4 py-1 font-medium text-gray-50 normal-case transition duration-200 hover:bg-violet-700 hover:shadow-md"
-                                startIcon={<IconUserPlus className="size-5" />}>
+                                startIcon={<IconUserPlus className="size-5" />}
+                                onClick={() => setOpenMemberAdd(true)}>
                                 Share
                             </Button>
                         </div>

@@ -1,6 +1,6 @@
 import { BoardTable } from '@/components/common/board/BoardTable';
 import EditableText from '@/components/common/input/EditableText';
-import useBoardUpdaters from '@/hooks/board-updaters';
+import useBoardUpdaters from '@/hooks/useBoardUpdaters';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
 import type { Board, Column, Label, Task } from '@/interfaces/interfaces';
 import type {
