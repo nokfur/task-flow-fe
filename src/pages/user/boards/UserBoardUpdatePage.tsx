@@ -1,6 +1,6 @@
-import BoardHeading from '@/components/common/board/board-heading/BoardHeading';
+import BoardHeading from '@/components/common/board/BoardHeading';
 import { BoardTable } from '@/components/common/board/BoardTable';
-import useBoardUpdaters from '@/hooks/board-updaters';
+import useBoardUpdaters from '@/hooks/useBoardUpdaters';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
 import type { Board, Column, Label, Task } from '@/interfaces/interfaces';
 import type {
@@ -8,9 +8,10 @@ import type {
     TaskReorderUpdateRequest,
 } from '@/interfaces/requestInterfaces';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const UserBoardUpdatePage = () => {
+    const navigate = useNavigate();
     const apiEndPoints = useApiEndpoints();
     const { boardId = '' } = useParams();
 
@@ -32,6 +33,9 @@ const UserBoardUpdatePage = () => {
             .getDetail(boardId)
             .then(({ data }: { data: Board }) => {
                 setBoard(data);
+            })
+            .catch((error) => {
+                if (error.status === 403) return navigate('/');
             })
             .finally(() => setLoading(false));
     }, [boardId]);
