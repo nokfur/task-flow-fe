@@ -77,11 +77,26 @@ const Header = () => {
                             horizontal: 'right',
                             vertical: 'bottom',
                         }}>
+                        <div className="flex items-center justify-center gap-2 px-3 py-2">
+                            <Avatar
+                                className="size-5 bg-gradient-to-br from-blue-500 to-purple-800 transition-all duration-200"
+                                alt={user?.name}
+                                children={
+                                    <span className="text-xs">
+                                        {getFirstLetterOfFirst2Word(user?.name)}
+                                    </span>
+                                }
+                            />
+                            <span className="text-sm font-medium">
+                                {user?.name}
+                            </span>
+                        </div>
+
+                        <Divider />
                         <MenuItem className="space-x-2 duration-300">
                             <IconUserCircle className="size-5" />
                             <span className="text-sm">My account</span>
                         </MenuItem>
-                        <Divider />
                         <MenuItem
                             className="space-x-2 duration-300"
                             onClick={handleLogout}>
