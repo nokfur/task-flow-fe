@@ -12,6 +12,8 @@ import {
 } from '@tabler/icons-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
+import useModalTransition from '@/hooks/useModalTransition';
+import { createPortal } from 'react-dom';
 
 interface LabelTemplate {
     id: string;
@@ -182,28 +184,13 @@ const BoardLabelManagementModal: React.FC<{
     labels = [],
     taskLabelIds = [],
 }) => {
+    const [isVisible, handleClose] = useModalTransition(open, onClose, 300);
+
     const [label, setLabel] = useState<LabelTemplate>({
         id: crypto.randomUUID(),
         name: '',
         color: '#000000',
     });
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        // Small delay to ensure DOM is ready for transition
-        if (open)
-            setTimeout(() => {
-                setIsVisible(true);
-            }, 10);
-    }, [open]);
-
-    const handleClose = () => {
-        // Wait for transition to complete before unmounting
-        setIsVisible(false);
-        setTimeout(() => {
-            onClose();
-        }, 300);
-    };
 
     const handleAdd = () => {
         onAdd(label);
@@ -214,18 +201,15 @@ const BoardLabelManagementModal: React.FC<{
 
     if (!open) return null;
 
-    return (
-        <div
-            className="fixed inset-0 z-100 flex items-center justify-center"
-            onPointerDownCapture={(e: React.PointerEvent) =>
-                e.stopPropagation()
-            }>
+    return createPortal(
+        <div className="fixed inset-0 z-1300 flex items-center justify-center">
             <div
                 className={`absolute inset-0 bg-black/50 duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
-                onClick={handleClose}></div>
+                onClick={handleClose}
+            />
 
             <div
-                className={`relative max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-xl bg-white shadow-2xl duration-300 ${isVisible ? 'scale-100' : 'scale-0'}`}>
+                className={`relative max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-xl bg-white shadow-2xl duration-300 ${isVisible ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`}>
                 {/* Modal Header */}
                 <div className="relative flex items-center justify-center border-b border-gray-200 px-4 py-3">
                     <IconButton
@@ -270,6 +254,7 @@ const BoardLabelManagementModal: React.FC<{
 
                     <div className="flex items-center gap-2">
                         <InputField
+                            name="labelName"
                             placeholder="Enter label name..."
                             className="text-sm"
                             value={label.name}
@@ -282,7 +267,7 @@ const BoardLabelManagementModal: React.FC<{
                         />
 
                         <input
-                            className="h-10 w-26"
+                            className="h-10 w-26 cursor-pointer"
                             type="color"
                             value={label.color}
                             onChange={(e) =>
@@ -293,7 +278,7 @@ const BoardLabelManagementModal: React.FC<{
                             }
                         />
 
-                        <Tooltip title="Add a new label">
+                        <Tooltip title="Add a new label" className="z-1400">
                             <span>
                                 <IconButton
                                     className="rounded-lg bg-blue-600 text-gray-50 normal-case hover:bg-blue-700 disabled:pointer-events-none disabled:bg-gray-300"
@@ -306,7 +291,8 @@ const BoardLabelManagementModal: React.FC<{
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 };
 

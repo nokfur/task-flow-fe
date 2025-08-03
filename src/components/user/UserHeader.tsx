@@ -15,10 +15,11 @@ import {
 } from '@tabler/icons-react';
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Header = () => {
+const UserHeader = () => {
     const { user, handleLogout } = useAuthProvider();
+    const navigate = useNavigate();
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -31,7 +32,7 @@ const Header = () => {
     };
 
     return (
-        <div className="sticky top-0 flex w-full flex-wrap items-center justify-center gap-3 bg-white/70 px-6 py-3 shadow-sm backdrop-blur-sm md:px-12 lg:px-24">
+        <div className="sticky top-0 z-50 flex w-full flex-wrap items-center justify-center gap-3 bg-white/70 px-6 py-0.5 shadow-sm backdrop-blur-sm md:px-12 lg:px-24">
             <div>
                 <Link to="/" className="text-3xl font-bold text-blue-600">
                     TaskFlow
@@ -41,12 +42,13 @@ const Header = () => {
                 <InputField
                     placeholder="Search boards"
                     startIcon={<IconSearch />}
+                    className="py-1!"
                 />
             </div>
 
             <div className="flex items-center justify-center gap-4">
                 <Button
-                    className="bg-blue-600 px-4 font-medium text-gray-50 normal-case transition duration-200 hover:bg-blue-700 hover:shadow-md"
+                    className="bg-blue-600 px-4 py-1 font-medium text-gray-50 normal-case transition duration-200 hover:bg-blue-700 hover:shadow-md"
                     startIcon={<IconTablePlus />}
                     component={Link}
                     to="/boards/create">
@@ -55,9 +57,13 @@ const Header = () => {
                 <div>
                     <IconButton onClick={handleClick}>
                         <Avatar
-                            className="size-9 cursor-pointer bg-gradient-to-br from-blue-500 to-purple-800 transition-all duration-200 hover:opacity-80"
+                            className="size-7 cursor-pointer bg-gradient-to-br from-blue-500 to-purple-800 transition-all duration-200 hover:opacity-80"
                             alt={user?.name}
-                            children={getFirstLetterOfFirst2Word(user?.name)}
+                            children={
+                                <span className="text-sm">
+                                    {getFirstLetterOfFirst2Word(user?.name)}
+                                </span>
+                            }
                         />
                     </IconButton>
                     <Menu
@@ -72,11 +78,28 @@ const Header = () => {
                             horizontal: 'right',
                             vertical: 'bottom',
                         }}>
-                        <MenuItem className="space-x-2 duration-300">
+                        <div className="flex items-center justify-center gap-2 px-3 py-2">
+                            <Avatar
+                                className="size-5 bg-gradient-to-br from-blue-500 to-purple-800 transition-all duration-200"
+                                alt={user?.name}
+                                children={
+                                    <span className="text-xs">
+                                        {getFirstLetterOfFirst2Word(user?.name)}
+                                    </span>
+                                }
+                            />
+                            <span className="text-sm font-medium">
+                                {user?.name}
+                            </span>
+                        </div>
+
+                        <Divider />
+                        <MenuItem
+                            className="space-x-2 duration-300"
+                            onClick={() => navigate('account')}>
                             <IconUserCircle className="size-5" />
                             <span className="text-sm">My account</span>
                         </MenuItem>
-                        <Divider />
                         <MenuItem
                             className="space-x-2 duration-300"
                             onClick={handleLogout}>
@@ -90,4 +113,4 @@ const Header = () => {
     );
 };
 
-export default Header;
+export default UserHeader;

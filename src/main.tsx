@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import { RouterProvider } from 'react-router-dom';
@@ -12,6 +12,7 @@ import {
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import { AnimatePresence } from 'framer-motion';
+import SpinningCircle from '@/components/common/loader/SpinningCircle';
 
 const THEME = createTheme({
     typography: {
@@ -30,7 +31,14 @@ createRoot(document.getElementById('root')!).render(
             <AuthProvider>
                 <ThemeProvider theme={THEME}>
                     <AnimatePresence mode="wait">
-                        <RouterProvider router={router} />
+                        <Suspense
+                            fallback={
+                                <div className="flex h-screen items-center justify-center text-violet-500">
+                                    <SpinningCircle size={7} loading />
+                                </div>
+                            }>
+                            <RouterProvider router={router} />
+                        </Suspense>
                     </AnimatePresence>
                 </ThemeProvider>
             </AuthProvider>

@@ -6,7 +6,7 @@ export interface InputProps {
     label?: string;
     type?: 'text' | 'number' | 'password' | 'email' | 'tel' | 'color';
     placeholder?: string;
-    isRequired?: boolean;
+    isRequired?: boolean; // for showing asterisk mark, no other use
     value?: string;
     onChange?: (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -51,26 +51,22 @@ const InputField: React.FC<InputProps> = ({
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
     const togglePasswordVisibility = () => {
-        setIsPasswordVisible(!isPasswordVisible);
+        setIsPasswordVisible((prev) => !prev);
     };
 
     const inputProps = {
         name,
-        type:
-            type === 'password'
-                ? isPasswordVisible
-                    ? 'text'
-                    : 'password'
-                : type,
+        type: type === 'password' && isPasswordVisible ? 'text' : type,
         placeholder,
         value,
         onChange,
         onBlur,
         onKeyUp: onKeyPress,
         onFocus,
-        className: `w-full rounded-lg border-2 px-3 py-2 text-sm text-gray-950 transition-all duration-300 ease-linear outline-none focus:border-purple-400 focus:shadow-md ${error ? 'border-red-400' : 'border-gray-100'} ${disabled ? 'bg-gray-200' : 'bg-white'} ${startIcon && 'pl-10'} ${className}`,
+        className: `${className} w-full rounded-lg border-2 px-3 py-2 text-sm text-gray-950 transition-all duration-300 ease-linear outline-none focus:border-purple-400 focus:shadow-md ${error ? 'border-red-400' : 'border-gray-100'} ${disabled ? 'bg-gray-200' : 'bg-white'} ${startIcon && 'pl-10'} `,
         disabled,
         autoFocus,
+        // required: isRequired,
     };
 
     return (
@@ -100,10 +96,10 @@ const InputField: React.FC<InputProps> = ({
                         onClick={togglePasswordVisibility}
                         className="absolute right-3 cursor-pointer">
                         <IconEye
-                            className={`transition-all duration-300 ${!isPasswordVisible && 'h-0'}`}
+                            className={`transition-all duration-300 ${isPasswordVisible && 'h-0'}`}
                         />
                         <IconEyeClosed
-                            className={`transition-all duration-300 ${isPasswordVisible && 'h-0'}`}
+                            className={`transition-all duration-300 ${!isPasswordVisible && 'h-0'}`}
                         />
                     </span>
                 )}

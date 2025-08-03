@@ -1,14 +1,65 @@
 import ColumnCard from '@/components/common/board/ColumnCard';
+import type { DueDateFilter, FilterKey } from '@/constants/constants';
 import type { Column, Label, Task } from '@/interfaces/interfaces';
 import Button from '@mui/material/Button';
+import Skeleton from '@mui/material/Skeleton';
 import { IconColumnInsertLeft } from '@tabler/icons-react';
-import {
-    AnimatePresence,
-    Reorder,
-    type PanInfo,
-    type Point,
-} from 'framer-motion';
-import { createContext, useContext, useRef, useState } from 'react';
+import dayjs from 'dayjs';
+import { AnimatePresence, motion, Reorder } from 'framer-motion';
+import React, { createContext, useContext, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
+const ColumnSkeleton: React.FC<{ id: React.Key }> = ({ id }) => (
+    <motion.div
+        key={id}
+        initial={{
+            opacity: 0,
+            width: 0,
+            height: 0,
+        }}
+        animate={{
+            opacity: 1,
+            width: 'auto',
+            height: 'auto',
+        }}
+        exit={{
+            opacity: 0,
+            width: 0,
+            height: 0,
+        }}>
+        <div className="w-xs rounded-xl border border-gray-200 bg-white">
+            <div className="rounded-t-xl bg-slate-100 px-4 py-2">
+                <Skeleton className="h-12 w-full" />
+            </div>
+
+            <div className="flex flex-col gap-2 p-2">
+                {Array.from({
+                    length: 4,
+                }).map((_, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{
+                            opacity: 0,
+                            height: 0,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            height: 'auto',
+                        }}
+                        exit={{
+                            opacity: 0,
+                            height: 0,
+                        }}>
+                        <div className="rounded-lg border border-gray-200 bg-white px-3 py-3">
+                            <Skeleton className="w-30" />
+                            <Skeleton className="h-12 w-full" />
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    </motion.div>
+);
 
 interface TaskDragState {
     draggedItem: Task | null;
@@ -21,10 +72,7 @@ interface TaskDragState {
 interface BoardContextType {
     onDragTaskStart: (item: Task, fromColumnId: string, index: number) => void;
     onDragTaskEnd: () => void;
-    onDragTask: (
-        _: MouseEvent | TouchEvent | PointerEvent,
-        info: PanInfo,
-    ) => void;
+    onDragTask: (overColumnId: string, insertIndex: number) => void;
 
     onUpdateColumn: (updatedColumn: Column) => void;
     onRemoveColumn: (columnId: string) => void;
@@ -43,12 +91,12 @@ interface BoardContextType {
     labels: Label[];
 
     taskDragState: TaskDragState;
-    taskRefs: React.RefObject<Record<string, HTMLDivElement>>;
 }
 
 const BoardContext = createContext<BoardContextType | null>(null);
 
 const BoardTable: React.FC<{
+    loading?: boolean;
     columns: Column[];
     labels: Label[];
 
@@ -74,7 +122,13 @@ const BoardTable: React.FC<{
     onUpdateLabel: BoardContextType['onUpdateLabel'];
     onRemoveLabel: BoardContextType['onRemoveLabel'];
 }> = (props) => {
-    const { columns, onAddColumn, onReorderColumn, onReorderTask } = props;
+    const {
+        columns,
+        onAddColumn,
+        onReorderColumn,
+        onReorderTask,
+        loading = false,
+    } = props;
 
     const [taskDragState, setTaskDragState] = useState<TaskDragState>({
         draggedItem: null,
@@ -84,13 +138,67 @@ const BoardTable: React.FC<{
         originalIndex: null,
     });
 
-    const columnRefs = useRef<Record<string, HTMLDivElement>>({});
-    const taskRefs = useRef<Record<string, HTMLDivElement>>({});
+    const [searchParams] = useSearchParams();
 
-    const handleDragTaskStart = (
-        item: Task,
-        fromColumnId: string,
-        index: number,
+    const filteredColumns = useMemo(() => {
+        const filter: Record<
+            FilterKey,
+            (task: Task, value: string) => boolean
+        > = {
+            due: (task: Task, value: string) => {
+                const today = dayjs();
+                const taskDueDate = dayjs(task.dueDate);
+
+                switch (value as DueDateFilter) {
+                    case 'noDue':
+                        return !task.dueDate;
+                    case 'overdue':
+                        return taskDueDate.isBefore(today, 'day');
+                    case 'nextDay':
+                        return (
+                            taskDueDate.isAfter(today, 'day') &&
+                            taskDueDate.isBefore(today.add(1, 'day'), 'day')
+                        );
+                    case 'nextWeek':
+                        return (
+                            taskDueDate.isAfter(today, 'day') &&
+                            taskDueDate.isBefore(today.add(7, 'day'), 'day')
+                        );
+                    default:
+                        return false;
+                }
+            },
+            label: (task: Task, name?: string) => {
+                if (name === 'none') {
+                    return task.labels.length === 0;
+                }
+                return task.labels.some((label) => label.name === name);
+            },
+        };
+
+        let filteredColumns = columns;
+
+        (['due', 'label'] as FilterKey[]).forEach((filterKey) => {
+            const filterValues = searchParams.getAll(filterKey);
+            if (filterValues.length === 0) return;
+
+            filteredColumns = filteredColumns.map((column) => ({
+                ...column,
+                tasks: column.tasks.filter((task) =>
+                    filterValues.some((value) =>
+                        filter[filterKey]?.(task, value),
+                    ),
+                ),
+            }));
+        });
+
+        return filteredColumns;
+    }, [columns, searchParams]);
+
+    const handleDragTaskStart: BoardContextType['onDragTaskStart'] = (
+        item,
+        fromColumnId,
+        index,
     ) => {
         setTaskDragState({
             draggedItem: item,
@@ -101,37 +209,32 @@ const BoardTable: React.FC<{
         });
     };
 
-    const handleDragTask = (
-        _: MouseEvent | TouchEvent | PointerEvent,
-        info: PanInfo,
+    const handleDragTask: BoardContextType['onDragTask'] = (
+        overColumnId,
+        insertIndex,
     ) => {
-        if (!taskDragState.draggedItem) return;
-
-        // Get the drop target column
-        const dropInfo = getDropTargetInfo(info.point);
+        if (taskDragState.draggedItem === null) return;
 
         setTaskDragState((prev) => ({
             ...prev,
-            overColumn: dropInfo.columnId,
-            insertionIndex: dropInfo.insertIndex,
+            overColumn: overColumnId,
+            insertionIndex: insertIndex,
         }));
     };
 
-    const handleDragTaskEnd = () => {
+    const handleDragTaskEnd: BoardContextType['onDragTaskEnd'] = () => {
         if (
-            !taskDragState.draggedItem ||
-            !taskDragState.fromColumn ||
-            !taskDragState.overColumn ||
-            taskDragState.insertionIndex === null
+            taskDragState.draggedItem &&
+            taskDragState.fromColumn &&
+            taskDragState.overColumn &&
+            taskDragState.insertionIndex !== null
         )
-            return;
-
-        onReorderTask(
-            taskDragState.draggedItem,
-            taskDragState.fromColumn,
-            taskDragState.overColumn,
-            taskDragState.insertionIndex,
-        );
+            onReorderTask(
+                taskDragState.draggedItem,
+                taskDragState.fromColumn,
+                taskDragState.overColumn,
+                taskDragState.insertionIndex,
+            );
 
         // Reset drag state
         setTaskDragState({
@@ -143,52 +246,6 @@ const BoardTable: React.FC<{
         });
     };
 
-    const getDropTargetInfo = (
-        point: Point,
-    ): { columnId: string | null; insertIndex: number } => {
-        for (const [columnId, columnRef] of Object.entries(
-            columnRefs.current,
-        )) {
-            if (!columnRef) continue;
-
-            const columnRect = columnRef.getBoundingClientRect();
-            const buffer = 0;
-
-            if (
-                point.x >= columnRect.left - buffer &&
-                point.x <= columnRect.right + buffer
-            ) {
-                // Find the insertion index within this column
-                const column = columns.find((c) => c.id === columnId);
-                if (!column) return { columnId, insertIndex: 0 };
-
-                const visibleTasks = column.tasks.filter(
-                    (t) => t.id !== taskDragState.draggedItem?.id,
-                );
-
-                let insertIndex = visibleTasks.length; // Default to end
-
-                // Check each task's position to find insertion point
-                visibleTasks.forEach((task, index) => {
-                    const taskElement = taskRefs.current[task.id];
-                    if (taskElement) {
-                        const taskRect = taskElement.getBoundingClientRect();
-                        const taskMiddle =
-                            window.scrollY + taskRect.top + taskRect.height / 2;
-
-                        // Get smallest index where current pointer is less than task position
-                        if (point.y < taskMiddle && index < insertIndex) {
-                            insertIndex = index;
-                        }
-                    }
-                });
-
-                return { columnId, insertIndex };
-            }
-        }
-        return { columnId: null, insertIndex: 0 };
-    };
-
     const handleAddColumn = () => {
         const newColumn: Column = {
             id: crypto.randomUUID(),
@@ -197,6 +254,12 @@ const BoardTable: React.FC<{
         };
         onAddColumn(newColumn);
     };
+
+    const getCardMotionProps = () => ({
+        initial: { opacity: 0, width: 0, filter: 'blur(4px)' },
+        animate: { opacity: 1, width: 'auto', filter: 'blur(0px)' },
+        exit: { opacity: 0, width: 0, filter: 'blur(4px)' },
+    });
 
     return (
         <BoardContext.Provider
@@ -208,56 +271,54 @@ const BoardTable: React.FC<{
                 onDragTask: handleDragTask,
 
                 taskDragState: taskDragState,
-                taskRefs: taskRefs,
             }}>
-            <Reorder.Group
-                axis="x"
-                as="div"
-                values={columns}
-                onReorder={onReorderColumn}>
-                <div className="flex items-start gap-4">
-                    <AnimatePresence mode="sync">
-                        {columns.map((column) => (
-                            <Reorder.Item
-                                ref={(el) =>
-                                    (columnRefs.current[column.id] = el)
-                                }
-                                as="div"
-                                value={column}
-                                key={column.id} // Prefer stable ID
-                                initial={{
-                                    opacity: 0,
-                                    width: 0,
-                                    height: 0,
-                                }}
-                                animate={{
-                                    opacity: 1,
-                                    width: 'auto',
-                                    height: 'auto',
-                                    scale: 1,
-                                }}
-                                exit={{
-                                    opacity: 0,
-                                    width: 0,
-                                    height: 0,
-                                }}
-                                drag
-                                whileDrag={{
-                                    scale: 1.05,
-                                }}>
-                                <ColumnCard column={column} />
-                            </Reorder.Item>
-                        ))}
-                    </AnimatePresence>
+            <div className="relative grow">
+                <div className="absolute inset-0 flex overflow-x-auto">
+                    <div className="flex grow px-8 pt-4 pb-8">
+                        <Reorder.Group
+                            axis="x"
+                            as="div"
+                            className="flex h-full items-start gap-4"
+                            values={filteredColumns}
+                            onReorder={onReorderColumn}>
+                            <AnimatePresence mode="sync">
+                                {loading
+                                    ? Array.from({ length: 6 }).map(
+                                          (_, index) => (
+                                              <motion.div
+                                                  layout
+                                                  key={index}
+                                                  {...getCardMotionProps()}>
+                                                  <ColumnSkeleton
+                                                      key={index}
+                                                      id={index}
+                                                  />
+                                              </motion.div>
+                                          ),
+                                      )
+                                    : filteredColumns.map((column) => (
+                                          <Reorder.Item
+                                              as="div"
+                                              className="flex h-full"
+                                              value={column}
+                                              key={column.id} // Prefer stable ID
+                                              drag
+                                              {...getCardMotionProps()}>
+                                              <ColumnCard column={column} />
+                                          </Reorder.Item>
+                                      ))}
+                            </AnimatePresence>
 
-                    <Button
-                        className="w-xs shrink-0 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-gray-500 normal-case hover:bg-gray-100"
-                        startIcon={<IconColumnInsertLeft />}
-                        onClick={handleAddColumn}>
-                        Add column
-                    </Button>
+                            <Button
+                                className="w-xs shrink-0 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-gray-500 normal-case hover:bg-gray-100"
+                                startIcon={<IconColumnInsertLeft />}
+                                onClick={handleAddColumn}>
+                                Add column
+                            </Button>
+                        </Reorder.Group>
+                    </div>
                 </div>
-            </Reorder.Group>
+            </div>
         </BoardContext.Provider>
     );
 };

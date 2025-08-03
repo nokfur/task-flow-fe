@@ -1,4 +1,4 @@
-import type { TaskPriority } from '@/constants/constants';
+import type { BoardMemberRole, TaskPriority } from '@/constants/constants';
 
 export interface LoginRequest {
     email: string;
@@ -11,9 +11,25 @@ export interface RegisterRequest {
     password: string;
 }
 
+export interface ChangePasswordRequest {
+    oldPassword: string;
+    newPassword: string;
+}
+
+export interface ProfileUpdateRequest {
+    name: string;
+}
+
 export interface BoardAddRequest {
     title: string;
     description: string;
+    templateId: string;
+    boardMembers: BoardMemberRequest[];
+}
+
+export interface BoardMemberRequest {
+    memberId: string;
+    role: BoardMemberRole;
 }
 
 export interface ColumnAddRequest {
@@ -33,14 +49,14 @@ export interface TaskAddRequest {
     title: string;
     description?: string;
     priority: TaskPriority;
-    dueDate?: string;
+    dueDate: Date | null;
 }
 
 export interface TaskUpdateRequest {
     title: string;
     description?: string;
     priority: TaskPriority;
-    dueDate?: string;
+    dueDate: Date | null;
 }
 
 export interface TaskReorderUpdateRequest {

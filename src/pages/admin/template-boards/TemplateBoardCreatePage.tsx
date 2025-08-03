@@ -1,7 +1,7 @@
 import { BoardTable } from '@/components/common/board/BoardTable';
 import InputField from '@/components/common/input/InputField';
 import SpinningCircle from '@/components/common/loader/SpinningCircle';
-import useBoardUpdaters from '@/hooks/board-updaters';
+import useBoardUpdaters from '@/hooks/useBoardUpdaters';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
 import type { Board, Task } from '@/interfaces/interfaces';
 import { getFormikTouchError } from '@/utilities/utils';
@@ -54,6 +54,7 @@ const TemplateBoardCreatePage = () => {
 
     const formik = useFormik({
         initialValues: {
+            id: '',
             title: '',
             description: '',
             columns: [],
@@ -75,7 +76,7 @@ const TemplateBoardCreatePage = () => {
                 })),
             };
 
-            apiEndpoints.boards.admin
+            apiEndpoints.admin.boards
                 .addTemplate(payload)
                 .then(() => {
                     toast.success('Add template successfully!');
@@ -91,9 +92,9 @@ const TemplateBoardCreatePage = () => {
     const getError = getFormikTouchError(formik);
 
     return (
-        <div className="-mx-6 -my-8 min-h-screen bg-slate-50 md:-mx-12">
+        <div className="-mx-6 -my-8 flex grow bg-slate-50 md:-mx-12">
             <form
-                className="space-y-4"
+                className="flex grow flex-col"
                 onSubmit={formik.handleSubmit}
                 onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}>
                 <div className="w-full bg-white">
@@ -143,27 +144,23 @@ const TemplateBoardCreatePage = () => {
                     </div>
                 </div>
 
-                <div className="min-h-screen overflow-x-auto px-8 pt-4">
-                    <div className="flex items-start gap-4">
-                        <BoardTable
-                            columns={formik.values.columns}
-                            labels={formik.values.labels}
-                            onReorderColumn={boardUpdaters.reorderColumn}
-                            onAddColumn={boardUpdaters.addColumn}
-                            onUpdateColumn={boardUpdaters.updateColumn}
-                            onRemoveColumn={boardUpdaters.removeColumn}
-                            onAddTask={boardUpdaters.addTask}
-                            onUpdateTask={boardUpdaters.updateTask}
-                            onRemoveTask={boardUpdaters.removeTask}
-                            onRemoveAllTasks={boardUpdaters.removeAllTasks}
-                            onToggleLabel={boardUpdaters.toggleLabel}
-                            onReorderTask={boardUpdaters.reorderTask}
-                            onAddLabel={boardUpdaters.addLabel}
-                            onUpdateLabel={boardUpdaters.updateLabel}
-                            onRemoveLabel={boardUpdaters.removeLabel}
-                        />
-                    </div>
-                </div>
+                <BoardTable
+                    columns={formik.values.columns}
+                    labels={formik.values.labels}
+                    onReorderColumn={boardUpdaters.reorderColumn}
+                    onAddColumn={boardUpdaters.addColumn}
+                    onUpdateColumn={boardUpdaters.updateColumn}
+                    onRemoveColumn={boardUpdaters.removeColumn}
+                    onAddTask={boardUpdaters.addTask}
+                    onUpdateTask={boardUpdaters.updateTask}
+                    onRemoveTask={boardUpdaters.removeTask}
+                    onRemoveAllTasks={boardUpdaters.removeAllTasks}
+                    onToggleLabel={boardUpdaters.toggleLabel}
+                    onReorderTask={boardUpdaters.reorderTask}
+                    onAddLabel={boardUpdaters.addLabel}
+                    onUpdateLabel={boardUpdaters.updateLabel}
+                    onRemoveLabel={boardUpdaters.removeLabel}
+                />
             </form>
         </div>
     );

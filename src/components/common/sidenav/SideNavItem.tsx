@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useResolvedPath } from 'react-router-dom';
 import { useSideNavContext } from './SideNavWrapper';
 import { Button } from '@mui/material';
 
@@ -9,9 +9,14 @@ const SideNavItem: React.FC<{
     onClick?: () => void;
     icon: ReactNode;
     title?: string;
-}> = ({ type = 'link', to = '/', onClick = () => {}, icon, title }) => {
+}> = ({ type = 'link', to = '', onClick = () => {}, icon, title }) => {
     const isSideNavCollapsed = useSideNavContext();
+
     const location = useLocation();
+    const resolved = useResolvedPath(to || '');
+
+    const isActive = location.pathname === resolved.pathname;
+    // console.log(location.pathname, to);
 
     return type === 'button' ? (
         <Button
@@ -38,9 +43,7 @@ const SideNavItem: React.FC<{
             component={Link}
             to={to}
             className={`flex items-center justify-start rounded-lg p-2 normal-case transition duration-200 hover:bg-gray-200 ${
-                location.pathname.includes(to)
-                    ? 'bg-green-100 text-green-600'
-                    : 'text-gray-500'
+                isActive ? 'bg-green-100 text-green-600' : 'text-gray-500'
             } ${
                 isSideNavCollapsed
                     ? 'flex-col items-center justify-center gap-2'

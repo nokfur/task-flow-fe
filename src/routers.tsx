@@ -1,15 +1,41 @@
-import TemplateBoardManagementPage from '@/pages/admin/TemplateBoardManagementPage';
-import PageWrapper from '@/components/common/PageWrapper';
-import ProtectedRoute from '@/components/common/ProtectedRoute';
-import { UserRole } from '@/constants/constants';
-import AdminLayout from '@/components/layout/AdminLayout';
-import AuthPage from '@/pages/AuthPage';
-import UserBoardCreatePage from '@/pages/user/UserBoardCreatePage';
-import UserBoardsPage from '@/pages/user/UserBoardsPage';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
-import TemplateBoardCreatePage from '@/pages/admin/TemplateBoardCreatePage';
-import UserLayout from '@/components/layout/UserLayout';
-import TemplateBoardUpdatePage from '@/pages/admin/TemplateBoardUpdatePage';
+import { UserRole } from '@/constants/constants';
+import { lazy } from 'react';
+const UserPasswordPage = lazy(
+    () => import('@/pages/user/profile/UserPasswordPage'),
+);
+const UserProfileLayout = lazy(
+    () => import('@/components/layout/UserProfileLayout'),
+);
+const UserProfilePage = lazy(
+    () => import('@/pages/user/profile/UserProfilePage'),
+);
+
+const UserBoardUpdatePage = lazy(
+    () => import('@/pages/user/boards/UserBoardUpdatePage'),
+);
+const TemplateBoardManagementPage = lazy(
+    () => import('@/pages/admin/template-boards/TemplateBoardManagementPage'),
+);
+const PageWrapper = lazy(() => import('@/components/layout/PageWrapper'));
+const ProtectedRoute = lazy(() => import('@/components/layout/ProtectedRoute'));
+const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'));
+const AuthPage = lazy(() => import('@/pages/AuthPage'));
+const UserBoardCreatePage = lazy(
+    () => import('@/pages/user/boards/UserBoardCreatePage'),
+);
+const UserBoardsPage = lazy(() => import('@/pages/user/boards/UserBoardsPage'));
+const TemplateBoardCreatePage = lazy(
+    () => import('@/pages/admin/template-boards/TemplateBoardCreatePage'),
+);
+const UserLayout = lazy(() => import('@/components/layout/UserLayout'));
+const TemplateBoardUpdatePage = lazy(
+    () => import('@/pages/admin/template-boards/TemplateBoardUpdatePage'),
+);
+const ChangePassword = lazy(() => import('@/components/user/ChangePassword'));
+const UserManagementPage = lazy(
+    () => import('@/pages/admin/users/UserManagementPage'),
+);
 
 const router = createBrowserRouter([
     {
@@ -51,6 +77,28 @@ const router = createBrowserRouter([
                                 path: 'create',
                                 element: <UserBoardCreatePage />,
                             },
+                            {
+                                path: ':boardId',
+                                element: <UserBoardUpdatePage />,
+                            },
+                        ],
+                    },
+                    {
+                        path: 'account',
+                        element: (
+                            <UserProfileLayout>
+                                <Outlet />
+                            </UserProfileLayout>
+                        ),
+                        children: [
+                            {
+                                path: '',
+                                element: <UserProfilePage />,
+                            },
+                            {
+                                path: 'password',
+                                element: <UserPasswordPage />,
+                            },
                         ],
                     },
                 ],
@@ -87,6 +135,8 @@ const router = createBrowserRouter([
                             },
                         ],
                     },
+                    { path: 'change-password', element: <ChangePassword /> },
+                    { path: 'users', element: <UserManagementPage /> },
                 ],
             },
             {

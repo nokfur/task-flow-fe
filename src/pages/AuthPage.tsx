@@ -1,5 +1,5 @@
+import SpinningCircle from '@/components/common/loader/SpinningCircle';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { lazy, Suspense, useState, type ReactNode } from 'react';
 
@@ -117,9 +117,10 @@ const AuthPage = () => {
                             <Suspense
                                 key={index}
                                 fallback={
-                                    <div className="p-8">
-                                        <CircularProgress />
-                                    </div>
+                                    <SpinningCircle
+                                        loading
+                                        className="text-violet-500"
+                                    />
                                 }>
                                 <motion.div
                                     initial={{ opacity: 0, height: 0 }}

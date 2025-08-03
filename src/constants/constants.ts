@@ -5,7 +5,14 @@ export const UserRole = {
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
-export type BoardMemberRole = 'Owner' | 'Member' | 'Admin';
+export const BoardMemberRole = {
+    Owner: 'Owner',
+    Member: 'Member',
+    Admin: 'Admin',
+} as const;
+
+export type BoardMemberRole =
+    (typeof BoardMemberRole)[keyof typeof BoardMemberRole];
 
 export type TaskPriority = 'High' | 'Medium' | 'Low';
 
@@ -14,3 +21,6 @@ export const TaskPriorityColor: Record<TaskPriority, string> = {
     Medium: 'bg-amber-100 text-amber-800',
     Low: 'bg-green-100 text-green-800',
 };
+
+export type DueDateFilter = 'noDue' | 'overdue' | 'nextDay' | 'nextWeek';
+export type FilterKey = 'due' | 'label';

@@ -1,6 +1,6 @@
 import { BoardTable } from '@/components/common/board/BoardTable';
 import EditableText from '@/components/common/input/EditableText';
-import useBoardUpdaters from '@/hooks/board-updaters';
+import useBoardUpdaters from '@/hooks/useBoardUpdaters';
 import useApiEndpoints from '@/hooks/useApiEndpoints';
 import type { Board, Column, Label, Task } from '@/interfaces/interfaces';
 import type {
@@ -8,7 +8,6 @@ import type {
     TaskReorderUpdateRequest,
 } from '@/interfaces/requestInterfaces';
 import Skeleton from '@mui/material/Skeleton';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -36,7 +35,7 @@ const TemplateBoardUpdatePage = () => {
                 setBoard(data);
             })
             .finally(() => setLoading(false));
-    }, []);
+    }, [boardId]);
 
     const handleUpdateBoard = (val: string, type: 'title' | 'description') => {
         const updated: Board = { ...board, [type]: val };
@@ -158,8 +157,8 @@ const TemplateBoardUpdatePage = () => {
     };
 
     return (
-        <div className="-mx-6 -my-8 min-h-screen bg-slate-50 md:-mx-12">
-            <div className="space-y-4">
+        <div className="-mx-6 -my-8 flex grow bg-slate-50 md:-mx-12">
+            <div className="flex grow flex-col">
                 <div className="w-full bg-white">
                     <div className="border-b border-gray-200 px-8 py-4">
                         <h1 className="text-3xl font-bold">
@@ -203,88 +202,24 @@ const TemplateBoardUpdatePage = () => {
                     </div>
                 </div>
 
-                <div className="min-h-screen overflow-x-auto px-8 pt-4">
-                    <div className="flex min-w-max items-start gap-4">
-                        {loading ? (
-                            <div className="flex items-start gap-4">
-                                <AnimatePresence mode="sync">
-                                    {Array.from({ length: 4 }).map(
-                                        (_, index) => (
-                                            <motion.div
-                                                key={index}
-                                                initial={{
-                                                    opacity: 0,
-                                                    width: 0,
-                                                    height: 0,
-                                                }}
-                                                animate={{
-                                                    opacity: 1,
-                                                    width: 'auto',
-                                                    height: 'auto',
-                                                    scale: 1,
-                                                }}
-                                                exit={{
-                                                    opacity: 0,
-                                                    width: 0,
-                                                    height: 0,
-                                                }}>
-                                                <div className="w-xs rounded-xl border border-gray-200 bg-white">
-                                                    <div className="rounded-t-xl bg-slate-100 px-4 py-2">
-                                                        <Skeleton className="h-12 w-full" />
-                                                    </div>
-
-                                                    <div className="flex flex-col gap-2 p-2">
-                                                        {Array.from({
-                                                            length: 4,
-                                                        }).map((_, index) => (
-                                                            <motion.div
-                                                                key={index}
-                                                                initial={{
-                                                                    opacity: 0,
-                                                                    height: 0,
-                                                                }}
-                                                                animate={{
-                                                                    opacity: 1,
-                                                                    height: 'auto',
-                                                                }}
-                                                                exit={{
-                                                                    opacity: 0,
-                                                                    height: 0,
-                                                                }}>
-                                                                <div className="rounded-lg border border-gray-200 bg-white px-3 py-3">
-                                                                    <Skeleton className="w-30" />
-                                                                    <Skeleton className="h-12 w-full" />
-                                                                </div>
-                                                            </motion.div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        ),
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        ) : (
-                            <BoardTable
-                                columns={board.columns}
-                                labels={board.labels}
-                                onReorderColumn={handleReorderColumns}
-                                onAddColumn={handleAddColumn}
-                                onUpdateColumn={handleUpdateColumn}
-                                onRemoveColumn={handleRemoveColumn}
-                                onAddTask={handleAddTask}
-                                onUpdateTask={handleUpdateTask}
-                                onRemoveTask={handleRemoveTask}
-                                onRemoveAllTasks={handleRemoveAllTasks}
-                                onToggleLabel={handleToggleLabel}
-                                onReorderTask={handleReorderTask}
-                                onAddLabel={handleAddLabel}
-                                onUpdateLabel={handleUpdateLabel}
-                                onRemoveLabel={handleRemoveLabel}
-                            />
-                        )}
-                    </div>
-                </div>
+                <BoardTable
+                    loading={loading}
+                    columns={board.columns}
+                    labels={board.labels}
+                    onReorderColumn={handleReorderColumns}
+                    onAddColumn={handleAddColumn}
+                    onUpdateColumn={handleUpdateColumn}
+                    onRemoveColumn={handleRemoveColumn}
+                    onAddTask={handleAddTask}
+                    onUpdateTask={handleUpdateTask}
+                    onRemoveTask={handleRemoveTask}
+                    onRemoveAllTasks={handleRemoveAllTasks}
+                    onToggleLabel={handleToggleLabel}
+                    onReorderTask={handleReorderTask}
+                    onAddLabel={handleAddLabel}
+                    onUpdateLabel={handleUpdateLabel}
+                    onRemoveLabel={handleRemoveLabel}
+                />
             </div>
         </div>
     );
