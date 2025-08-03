@@ -62,6 +62,10 @@ yarn dev
 
 The application will be available at `http://localhost:5173`
 
+Admin login:
+- Name: admin
+- Password: 12345
+
 ### Building for Production
 
 Build the application:
