@@ -1,10 +1,10 @@
-import Header from '@/components/user/Header';
+import UserHeader from '@/components/user/UserHeader';
 import React, { type ReactNode } from 'react';
 
 const UserLayout: React.FC<{ children?: ReactNode }> = ({ children }) => {
     return (
         <div className="flex min-h-screen flex-col">
-            <Header />
+            <UserHeader />
             {children}
         </div>
     );

@@ -104,11 +104,8 @@ const ChangePassword = () => {
 
                     <div className="flex justify-center">
                         <Button
-                            className={`w-xs rounded-lg py-2 text-base font-semibold text-gray-50 normal-case transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl ${
-                                updating
-                                    ? 'pointer-events-none bg-gray-300'
-                                    : 'bg-gradient-to-tl from-indigo-400 to-purple-600'
-                            }`}
+                            className="w-36 bg-violet-600 py-2 font-semibold text-gray-50 normal-case duration-300 hover:bg-violet-700 disabled:pointer-events-none disabled:bg-gray-300"
+                            disabled={updating}
                             startIcon={<SpinningCircle loading={updating} />}
                             type="submit">
                             Update

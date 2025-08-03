@@ -11,6 +11,7 @@ import type {
     LabelAddRequest,
     LabelUpdateRequest,
     LoginRequest,
+    ProfileUpdateRequest,
     RegisterRequest,
     TaskAddRequest,
     TaskReorderUpdateRequest,
@@ -73,6 +74,9 @@ const useApiEndpoints = () => {
         users: {
             search: (query: string, exceptIds: string[]) =>
                 axiosClient.post(`/users?search=${query}`, exceptIds),
+            getProfile: () => axiosClient.get(`/users/me`),
+            updateProfile: (payload: ProfileUpdateRequest) =>
+                axiosClient.put(`/users/me`, payload),
             changePassword: (payload: ChangePasswordRequest) =>
                 axiosClient.patch(`/users/password`, payload),
             getBoardMembers: (boardId: string) =>

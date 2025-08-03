@@ -1,6 +1,15 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { UserRole } from '@/constants/constants';
 import { lazy } from 'react';
+const UserPasswordPage = lazy(
+    () => import('@/pages/user/profile/UserPasswordPage'),
+);
+const UserProfileLayout = lazy(
+    () => import('@/components/layout/UserProfileLayout'),
+);
+const UserProfilePage = lazy(
+    () => import('@/pages/user/profile/UserProfilePage'),
+);
 
 const UserBoardUpdatePage = lazy(
     () => import('@/pages/user/boards/UserBoardUpdatePage'),
@@ -71,6 +80,24 @@ const router = createBrowserRouter([
                             {
                                 path: ':boardId',
                                 element: <UserBoardUpdatePage />,
+                            },
+                        ],
+                    },
+                    {
+                        path: 'account',
+                        element: (
+                            <UserProfileLayout>
+                                <Outlet />
+                            </UserProfileLayout>
+                        ),
+                        children: [
+                            {
+                                path: '',
+                                element: <UserProfilePage />,
+                            },
+                            {
+                                path: 'password',
+                                element: <UserPasswordPage />,
                             },
                         ],
                     },

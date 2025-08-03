@@ -4,6 +4,7 @@ import type {
     UserRole,
 } from '@/constants/constants';
 
+// Token fields
 export interface User {
     id: string;
     name: string;
@@ -11,12 +12,26 @@ export interface User {
     role: UserRole;
 }
 
+// User management
 export interface UserDetail {
     id: string;
     name: string;
     email: string;
     role: UserRole;
     createdAt: string;
+}
+
+// Self info response
+export interface UserProfile {
+    id: string;
+    name: string;
+    email: string;
+}
+
+export interface UserSearch {
+    id: string;
+    name: string;
+    email: string;
 }
 
 export interface BoardGeneral {
@@ -46,12 +61,6 @@ export interface BoardMember {
     name: string;
     email: string;
     role: BoardMemberRole;
-}
-
-export interface UserSearch {
-    id: string;
-    name: string;
-    email: string;
 }
 
 export interface Label {

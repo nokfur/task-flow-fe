@@ -16,6 +16,10 @@ export interface ChangePasswordRequest {
     newPassword: string;
 }
 
+export interface ProfileUpdateRequest {
+    name: string;
+}
+
 export interface BoardAddRequest {
     title: string;
     description: string;

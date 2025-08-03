@@ -15,10 +15,11 @@ import {
 } from '@tabler/icons-react';
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Header = () => {
+const UserHeader = () => {
     const { user, handleLogout } = useAuthProvider();
+    const navigate = useNavigate();
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -93,7 +94,9 @@ const Header = () => {
                         </div>
 
                         <Divider />
-                        <MenuItem className="space-x-2 duration-300">
+                        <MenuItem
+                            className="space-x-2 duration-300"
+                            onClick={() => navigate('account')}>
                             <IconUserCircle className="size-5" />
                             <span className="text-sm">My account</span>
                         </MenuItem>
@@ -110,4 +113,4 @@ const Header = () => {
     );
 };
 
-export default Header;
+export default UserHeader;
