@@ -116,33 +116,6 @@ const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost
 - API error interceptors
 - User-friendly error messages
 
-## 🚀 Deployment
-
-### Vercel (Recommended)
-1. Connect your repository to Vercel
-2. Set environment variables
-3. Deploy automatically on push
-
-### Netlify
-1. Build command: `npm run build`
-2. Publish directory: `dist`
-3. Set environment variables
-
-### Docker
-```dockerfile
-FROM node:18-alpine as build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
 ## 🆘 Troubleshooting
 
 ### Common Issues
