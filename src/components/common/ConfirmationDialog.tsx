@@ -26,7 +26,7 @@ const ConfirmationDialog: React.FC<{
 
     return createPortal(
         <div
-            className="fixed inset-0 z-100 flex items-center justify-center"
+            className="fixed inset-0 z-1300 flex items-center justify-center"
             onPointerDownCapture={(e: React.PointerEvent) =>
                 e.stopPropagation()
             }>
