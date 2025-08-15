@@ -13,7 +13,7 @@ const SideNavItem: React.FC<{
     const isSideNavCollapsed = useSideNavContext();
 
     const location = useLocation();
-    const resolved = useResolvedPath(to || '');
+    const resolved = useResolvedPath(to);
 
     const isActive = location.pathname === resolved.pathname;
     // console.log(location.pathname, to);
