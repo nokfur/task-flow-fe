@@ -7,8 +7,9 @@ import type {
     ColumnPositionUpdateRequest,
     TaskReorderUpdateRequest,
 } from '@/interfaces/requestInterfaces';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import useBoardSignalR from '@/hooks/useBoardSignalR';
 
 const UserBoardUpdatePage = () => {
     const navigate = useNavigate();
@@ -27,23 +28,42 @@ const UserBoardUpdatePage = () => {
 
     const boardUpdaters = useBoardUpdaters(setBoard);
 
+    const fetchBoard = useCallback(
+        (loadingRequired: boolean) => {
+            if (loadingRequired) setLoading(true);
+
+            apiEndPoints.boards
+                .getDetail(boardId)
+                .then(({ data }: { data: Board }) => {
+                    setBoard(data);
+                })
+                .catch((error) => {
+                    if (error.status === 403) return navigate('/');
+                })
+                .finally(() => setLoading(false));
+        },
+        [boardId],
+    );
+
     useEffect(() => {
-        setLoading(true);
-        apiEndPoints.boards
-            .getDetail(boardId)
-            .then(({ data }: { data: Board }) => {
-                setBoard(data);
-            })
-            .catch((error) => {
-                if (error.status === 403) return navigate('/');
-            })
-            .finally(() => setLoading(false));
-    }, [boardId]);
+        fetchBoard(true);
+    }, [boardId, fetchBoard]);
+
+    const boardConnection = useBoardSignalR(boardId, () => {
+        fetchBoard(false);
+    });
+
+    const notifyBoardUpdated = () => {
+        boardConnection
+            ?.invoke('NotifyBoardUpdated', board.id)
+            .catch((err) => console.error('Notify failed', err));
+    };
 
     const handleUpdateBoard = (val: string, type: 'title' | 'description') => {
         const updated: Board = { ...board, [type]: val };
         apiEndPoints.boards.update(boardId, updated).then(() => {
             setBoard(updated);
+            notifyBoardUpdated();
         });
     };
 
@@ -52,6 +72,7 @@ const UserBoardUpdatePage = () => {
             .add(boardId, newColumn)
             .then(({ data }: { data: Column }) => {
                 boardUpdaters.addColumn(data);
+                notifyBoardUpdated();
             });
     };
 
@@ -60,12 +81,14 @@ const UserBoardUpdatePage = () => {
             .update(updatedColumn.id, updatedColumn)
             .then(() => {
                 boardUpdaters.updateColumn(updatedColumn);
+                notifyBoardUpdated();
             });
     };
 
     const handleRemoveColumn = (id: string) => {
         apiEndPoints.columns.delete(id).then(() => {
             boardUpdaters.removeColumn(id);
+            notifyBoardUpdated();
         });
     };
 
@@ -74,24 +97,28 @@ const UserBoardUpdatePage = () => {
             .add(columnId, newTask)
             .then(({ data }: { data: Task }) => {
                 boardUpdaters.addTask(columnId, data);
+                notifyBoardUpdated();
             });
     };
 
     const handleUpdateTask = (updatedTask: Task, columnId: string) => {
         apiEndPoints.tasks.update(updatedTask.id, updatedTask).then(() => {
             boardUpdaters.updateTask(updatedTask, columnId);
+            notifyBoardUpdated();
         });
     };
 
     const handleRemoveTask = (taskId: string, columnId: string) => {
         apiEndPoints.tasks.delete(taskId).then(() => {
             boardUpdaters.removeTask(taskId, columnId);
+            notifyBoardUpdated();
         });
     };
 
     const handleRemoveAllTasks = (columnId: string) => {
         apiEndPoints.tasks.deleteAll(columnId).then(() => {
             boardUpdaters.removeAllTasks(columnId);
+            notifyBoardUpdated();
         });
     };
 
@@ -100,18 +127,21 @@ const UserBoardUpdatePage = () => {
             .add(boardId, label)
             .then(({ data }: { data: Label }) => {
                 boardUpdaters.addLabel(data);
+                notifyBoardUpdated();
             });
     };
 
     const handleUpdateLabel = (updatedLabel: Label) => {
         apiEndPoints.labels.update(updatedLabel.id, updatedLabel).then(() => {
             boardUpdaters.updateLabel(updatedLabel);
+            notifyBoardUpdated();
         });
     };
 
     const handleRemoveLabel = (labelId: string) => {
         apiEndPoints.labels.delete(labelId).then(() => {
             boardUpdaters.removeLabel(labelId);
+            notifyBoardUpdated();
         });
     };
 
@@ -122,6 +152,7 @@ const UserBoardUpdatePage = () => {
     ) => {
         apiEndPoints.tasks.toggleLabel(taskId, labelId).then(() => {
             boardUpdaters.toggleLabel(columnId, taskId, labelId);
+            notifyBoardUpdated();
         });
     };
 
@@ -133,6 +164,7 @@ const UserBoardUpdatePage = () => {
 
         apiEndPoints.columns.updatePositions(payload).then(() => {
             boardUpdaters.reorderColumn(newOrder);
+            notifyBoardUpdated();
         });
     };
 
@@ -156,6 +188,7 @@ const UserBoardUpdatePage = () => {
                 targetColumnId,
                 targetIndex,
             );
+            notifyBoardUpdated();
         });
     };
 

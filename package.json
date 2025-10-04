@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@microsoft/signalr": "^9.0.6",
     "@mui/material": "^7.1.0",
     "@mui/x-data-grid": "^8.8.0",
     "@mui/x-date-pickers": "^8.9.0",
